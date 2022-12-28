@@ -10,8 +10,7 @@ ONE_IMG_TEST = False
 MODEL_PATH = ".\\nets\\full\\_full_model"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
-DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger",
-7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
+DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
 
 def webcam(model):
 	cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -51,17 +50,21 @@ def testValDataset(model):
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	errors = 0
+	errorsUnderPercent = [0] * 10
 
-	for i in len(images_paths_list):
+	for i in range(len(images_paths_list)):
 		img_path = images_paths_list[i]
 		img = cv.imread(img_path, 1)
 		img = img.reshape(1, 224, 224, 3)
-		prediction = model.predict(img)[0]
-		if int(prediction[np.argmax(prediction)]) != int(labels[i]):
+		prediction = model.predict(img, verbose = 0)[0]
+		if np.argmax(prediction) != labels[i]:
 			errors += 1
+			errorsUnderPercent[int(prediction[np.argmax(prediction)] * 10)] += 1
+		evaluation = (1 - (errors / (i + 1))) * 100
+		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}        ", end = "\r")
 
-	evaluation = errors / len(images_paths_list)
-	print(f"Errors: {errors}\t evaluation: {evaluation} %")
+	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
+	print(f"Images: {len(images_paths_list)}\t\tErrors: {errors}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}            ")
 
 def atoi(text):
 	return int(text) if text.isdigit() else text
