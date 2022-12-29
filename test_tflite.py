@@ -14,7 +14,7 @@ TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\image
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 
 TEST_ONE_IMG = False
-WEBCAM = False
+WEBCAM = True
 
 def testOneImage():
 	# Load TFLite model and allocate tensors.
@@ -52,6 +52,7 @@ def webcamTest():
 	while (True):
 		ret, image = capture.read()
 		rectangles = cascade.detectMultiScale(image, 1.3, 3)
+		
 		# Load TFLite model and allocate tensors.
 		interpreter = tf.lite.Interpreter(model_path = MODEL_PATH)
 		interpreter.allocate_tensors()
@@ -70,7 +71,7 @@ def webcamTest():
 			output = interpreter.get_tensor(output_details[0]["index"])[0]
 			emotion = DICT[np.argmax(output)]
 			prediction = output[np.argmax(output)]
-			print(f"{emotion} {(prediction * 100):.3f} %         ", end = "\r")
+			print(f"{(prediction * 100):.3f} %\t{emotion}          ", end = "\r")
 			cv.rectangle(image, rect, (0, 0, 0), 3)
 			cv.rectangle(image, rect, (255, 255, 255), 1)
 			cv.putText(image, emotion, (rect[1], rect[0]), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3, 2)
