@@ -27,29 +27,38 @@ class SequenceLoader(keras.utils.Sequence):
 
 	def __getitem__(self, index):
 		"""Generate one batch of data"""
-		
 		indices = self.indices[index * self.batch_size : (index + 1) * self.batch_size]	# selects indices of data for next batch
-
 		# select data and load images
 		labels = np.array([self.labels[i] for i in indices])
+		#images = [img_to_array(load_img(self.images_paths[k], target_size = (224, 224)), dtype = np.uint8) for k in indices]
 		images = [img_to_array(load_img(self.images_paths[k], target_size = (224, 224))) for k in indices]
 		# preprocess and augment data
-		#if self.augment:
-		#	images = self.augment_images(images)
+		if self.augment:
+			images = self.augment_images(images)
+		#images = np.array([img.astype(np.float32) for img in images])
 		images = np.array([img for img in images])
+		#images = images.astype(np.float32)
 		#images = np.array([preprocess_input(img) for img in images])
 		return images, labels
 
 	def augment_images(self, images):
 		"""Apply data augmentation"""
-		sometimes = lambda aug: iaa.Sometimes(0.25, aug)
-		seq = iaa.Sequential(
-			[
-				iaa.Fliplr(0.25),													# horizontally flip 50% of images
-				sometimes(iaa.Affine(
-					translate_percent = {"x": (-0.1, 0.1), "y": (-0.1, 0.1)},		# translate by +-20 % (per axis)
-					rotate = (-10, 10),												# rotate by +-10 degrees
-				))
-			]
-		)
+		sometimes1 = lambda aug: iaa.Sometimes(0.1, aug)
+		sometimes2 = lambda aug: iaa.Sometimes(0.02, aug)
+		
+		# commented augmenters are not compatible with dtype np.float32
+		seq = iaa.Sequential([
+			sometimes1(iaa.Fliplr(0.5)), 
+			sometimes1(iaa.Crop(percent = (0, 0.1))),
+			sometimes1(iaa.LinearContrast((0.6, 1.2))),
+			sometimes1(iaa.AdditiveGaussianNoise(loc = 0, scale = (0.0, 0.05 * 255), per_channel = 0.5)),
+			sometimes1(iaa.Multiply((0.8, 1.2), per_channel = 0.2)),
+			sometimes1(iaa.Rotate((-30, 30))),
+			sometimes1(iaa.Affine(translate_percent = {"x": (-0.1, 0.1), "y": (-0.1, 0.1)})),
+			sometimes1(iaa.Affine(rotate = (-10, 10))),
+			sometimes2(iaa.GaussianBlur((0, 2))),
+			sometimes2(iaa.MotionBlur((3, 4))),
+			], random_order = True)
+
 		return seq.augment_images(images)
+		#return seq(images = images)

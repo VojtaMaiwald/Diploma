@@ -20,19 +20,18 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-#ssh mai0042@158.196.109.98
 
-MODEL_PATH = ".\\nets\\MobileNetV2\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
-TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
-TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
-TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
-BATCH_SIZE = 14
+MODEL_PATH = "./nets/MobileNetV2/"
+TRAIN_IMAGES_PATH = "/sp2/train_set/images/"
+TRAIN_LABELS_PATH = "/sp2/train_set/all_labels_exp.npy"
+TEST_IMAGES_PATH = "/sp1/val_set/images/"
+TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
+BATCH_SIZE = 32
 EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = f"MobileNetV2_B128_E25_D0.5"
+MODEL_NAME = f"MobileNetV2_B32_E25_D0.5_AUG"
 
 def init():
 	#print(os.getenv("TF_GPU_ALLOCATOR"))
