@@ -15,23 +15,23 @@ from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
 MODEL_PATH = "./nets/MobileNetV2/"
-TRAIN_IMAGES_PATH = "/sp2/train_set/images/"
-TRAIN_LABELS_PATH = "/sp2/train_set/all_labels_exp.npy"
+TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
+TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 32
+BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = f"MobileNetV2_B32_E25_D0.5_AUG"
+MODEL_NAME = "MobileNetV2_B32_E25_D0.5_AUG"
 
 def init():
 	#print(os.getenv("TF_GPU_ALLOCATOR"))
@@ -48,15 +48,22 @@ def init():
 			# Memory growth must be set before GPUs have been initialized
 			print(e)
 
+	#strategy = tf.distribute.MultiWorkerMirroredStrategy()
+	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
+	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.NcclAllReduce())
+	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
+	return strategy
+
 def root_mean_squared_error(y_true, y_pred):
 	return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
-def load_model(existingModelPath = None):
+def load_model(strategy, existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		model = MobileNetV2(classes = 8, weights = None)
-		model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics =['accuracy'])
+		with strategy.scope():
+			model = MobileNetV2(classes = 8, weights = None)
+			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics =['accuracy'])
 
 	return model
 
@@ -85,10 +92,10 @@ def load_dataset(labels_path, images_path):
 	return sequence, len(images_paths_list), weights
 
 if __name__ == "__main__":
-	init()
+	strategy = init()
 
 	#model = load_model(".\\nets3\\_full_model.tf")
-	model = load_model()
+	model = load_model(strategy)
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count, train_weights = load_dataset(TRAIN_LABELS_PATH, TRAIN_IMAGES_PATH)
 	test_sequence, test_labels_count, test_weights = load_dataset(TEST_LABELS_PATH, TEST_IMAGES_PATH)
@@ -123,4 +130,6 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME + '_full_model', save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
-	print(history.history["val_acc"])
+	print(history)
+	for i in history:
+		print(i)
