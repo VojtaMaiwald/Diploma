@@ -14,9 +14,10 @@ from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
+from keras import backend as K
 
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+#os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
@@ -26,16 +27,14 @@ TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = "MobileNetV2_B32_E25_D0.5_AUG"
+MODEL_NAME = "MobileNetV2_B8_E25_D0.5_NOAUG"
 
 def init():
-	#print(os.getenv("TF_GPU_ALLOCATOR"))
-
 	gpus = tf.config.list_physical_devices('GPU')
 	if gpus:
 		try:
@@ -85,7 +84,7 @@ def load_dataset(labels_path, images_path):
 	weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(labels), y = labels)
 	weights = dict(enumerate(weights))
 	labels = to_categorical(labels, num_classes = 8)
-	augment = True
+	augment = False
 	shuffle = False
 
 	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, shuffle, augment)
@@ -130,6 +129,7 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME + '_full_model', save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
-	print(history)
-	for i in history:
+	print(history.history['val_accuracy'])
+	print(history.history['accuracy'])
+	for i in history.history:
 		print(i)

@@ -7,7 +7,7 @@ import re
 
 WEBCAM = False
 ONE_IMG_TEST = False
-MODEL_PATH = ".\\nets\\full\\_full_model"
+MODEL_PATH = ".\\nets\\MobileNetV2\\MobileNetV2_B32_E25_D0.5_NOAUG"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
@@ -47,24 +47,25 @@ def testOneImage(model):
 
 def testValDataset(model):
 	labels = np.load(TEST_LABELS_PATH)
+	predictions = []
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	errors = 0
-	errorsUnderPercent = [0] * 10
 
 	for i in range(len(images_paths_list)):
 		img_path = images_paths_list[i]
 		img = cv.imread(img_path, 1)
 		img = img.reshape(1, 224, 224, 3)
 		prediction = model.predict(img, verbose = 0)[0]
+		predictions.append(np.argmax(prediction))
 		if np.argmax(prediction) != labels[i]:
 			errors += 1
-			errorsUnderPercent[int(prediction[np.argmax(prediction)] * 10)] += 1
 		evaluation = (1 - (errors / (i + 1))) * 100
-		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}        ", end = "\r")
+		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
 
+	print("\n")
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"Images: {len(images_paths_list)}\t\tErrors: {errors}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}            ")
+	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 
 def atoi(text):
 	return int(text) if text.isdigit() else text
