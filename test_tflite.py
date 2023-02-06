@@ -14,7 +14,7 @@ TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\image
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 
 TEST_ONE_IMG = False
-WEBCAM = True
+WEBCAM = False
 
 def testOneImage():
 	# Load TFLite model and allocate tensors.
@@ -83,10 +83,10 @@ def webcamTest():
 
 def testValDataset():
 	labels = np.load(TEST_LABELS_PATH)
+	predictions = []
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	errors = 0
-	errorsUnderPercent = [0] * 10
 
 	# Load TFLite model and allocate tensors.
 	interpreter = tf.lite.Interpreter(model_path = MODEL_PATH)
@@ -106,14 +106,15 @@ def testValDataset():
 		interpreter.set_tensor(input_details[0]['index'], img)
 		interpreter.invoke()
 		prediction = interpreter.get_tensor(output_details[0]["index"])[0]
+		predictions.append(np.argmax(prediction))
 		if np.argmax(prediction) != labels[i]:
 			errors += 1
-			errorsUnderPercent[int(prediction[np.argmax(prediction)] * 10)] += 1
 		evaluation = (1 - (errors / (i + 1))) * 100
-		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}        ", end = "\r")
+		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
 
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"Images: {len(images_paths_list)}\t\tErrors: {errors}\t\tSuccess rate: {evaluation:.3f} %\t\tErrors by probability: {errorsUnderPercent}            ")
+	print(f"Images: {len(images_paths_list)}\t\tErrors: {errors}\t\tSuccess rate: {evaluation:.3f} %            ")
+	print(f"Confusion matrix:\n {tf.math.confusion_matrix(labels, predictions)}")
 
 def atoi(text):
 	return int(text) if text.isdigit() else text
