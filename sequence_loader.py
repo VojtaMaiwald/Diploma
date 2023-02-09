@@ -19,11 +19,11 @@ class SequenceLoader(keras.utils.Sequence):
 		"""Denotes the number of batches per epoch"""
 		return len(self.images_paths) // self.batch_size
 		
-	#def on_epoch_end(self): # is it really called?
-	#	"""Updates indices after each epoch"""
-	#	self.indices = np.arange(len(self.images_paths))
-	#	if self.shuffle:
-	#		np.random.shuffle(self.indices)
+	def on_epoch_end(self): # is it really called?
+		"""Updates indices after each epoch"""
+		self.indices = np.arange(len(self.images_paths))
+		if self.shuffle:
+			np.random.shuffle(self.indices)
 
 	def __getitem__(self, index):
 		"""Generate one batch of data"""
@@ -48,14 +48,14 @@ class SequenceLoader(keras.utils.Sequence):
 		
 		# commented augmenters are not compatible with dtype np.float32
 		seq = iaa.Sequential([
-			#sometimes1(iaa.Fliplr(0.5)), 
-			#sometimes1(iaa.Crop(percent = (0, 0.1))),
-			#sometimes1(iaa.LinearContrast((0.6, 1.2))),
-			sometimes2(iaa.AdditiveGaussianNoise(loc = 0, scale = (0.0, 0.05 * 255), per_channel = 0.5)),
-			#sometimes1(iaa.Multiply((0.8, 1.2), per_channel = 0.2)),
-			#sometimes1(iaa.Rotate((-30, 30))),
-			#sometimes1(iaa.Affine(translate_percent = {"x": (-0.1, 0.1), "y": (-0.1, 0.1)})),
-			#sometimes1(iaa.Affine(rotate = (-10, 10))),
+			sometimes1(iaa.Fliplr(0.5)), 
+			sometimes1(iaa.Crop(percent = (0, 0.1))),
+			sometimes1(iaa.LinearContrast((0.6, 1.2))),
+			sometimes1(iaa.AdditiveGaussianNoise(loc = 0, scale = (0.0, 0.05 * 255), per_channel = 0.5)),
+			sometimes1(iaa.Multiply((0.8, 1.2), per_channel = 0.2)),
+			sometimes1(iaa.Rotate((-30, 30))),
+			sometimes1(iaa.Affine(translate_percent = {"x": (-0.1, 0.1), "y": (-0.1, 0.1)})),
+			sometimes1(iaa.Affine(rotate = (-10, 10))),
 			sometimes2(iaa.GaussianBlur((0, 2))),
 			sometimes2(iaa.MotionBlur((3, 4))),
 			], random_order = True)

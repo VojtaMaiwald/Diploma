@@ -1,2 +1,4 @@
 __pycache__/
-nets/
+!nets/
+nets/*
+!nets/MobileNetV2/

@@ -16,8 +16,8 @@ from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
 from keras import backend as K
 
-#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-#os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
@@ -27,12 +27,12 @@ TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 32 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = "MobileNetV2_B8_E25_D0.5_NOAUG"
+MODEL_NAME = "MobileNetV2_E25_B32_AUGFULL_SHUFFLE"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -48,21 +48,24 @@ def init():
 			print(e)
 
 	#strategy = tf.distribute.MultiWorkerMirroredStrategy()
-	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
+	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.NcclAllReduce())
-	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
+	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
 	return strategy
 
 def root_mean_squared_error(y_true, y_pred):
 	return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
 def load_model(strategy, existingModelPath = None):
+#def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
 			model = MobileNetV2(classes = 8, weights = None)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics =['accuracy'])
+			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics = ['accuracy'])
+		#model = MobileNetV2(classes = 8, weights = None)
+		#model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics =['accuracy'])
 
 	return model
 
@@ -77,24 +80,23 @@ def load_dataset(labels_path, images_path):
 	labels = np.load(labels_path)
 	images_paths_list = glob.glob(images_path + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
-	#augment = False
-	#shuffle = False
-	#weights = None
 
 	weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(labels), y = labels)
 	weights = dict(enumerate(weights))
 	labels = to_categorical(labels, num_classes = 8)
-	augment = False
-	shuffle = False
+	augment = True
+	shuffle = True
 
 	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, shuffle, augment)
 	return sequence, len(images_paths_list), weights
 
 if __name__ == "__main__":
 	strategy = init()
+	#init()
 
 	#model = load_model(".\\nets3\\_full_model.tf")
 	model = load_model(strategy)
+	#model = load_model()
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count, train_weights = load_dataset(TRAIN_LABELS_PATH, TRAIN_IMAGES_PATH)
 	test_sequence, test_labels_count, test_weights = load_dataset(TEST_LABELS_PATH, TEST_IMAGES_PATH)
@@ -129,7 +131,5 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME + '_full_model', save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
-	print(history.history['val_accuracy'])
-	print(history.history['accuracy'])
-	for i in history.history:
-		print(i)
+	print("accuracy:\n", history.history['accuracy'])
+	print("val_accuracy:\n", history.history['val_accuracy'])
