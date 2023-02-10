@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-MODEL_PATH = ".\\nets\\full\\_full_model"
+MODEL_PATH = ".\\nets\\MobileNetV2\\MobileNetV2_E25_B8_AUGFULL"
 EXPORT_PATH = ".\\nets_tflite\\"
 
 # Convert the model
@@ -13,5 +13,5 @@ print(converter.inference_input_type, converter.inference_output_type, converter
 tflite_model = converter.convert()
 
 # Save the model.
-#with open(EXPORT_PATH + "model_optimized_defaultType.tflite", 'wb') as f:
-#	f.write(tflite_model)
+with open(EXPORT_PATH + "MobileNetV2_E25_B8_AUGFULL_OPT_DEF.tflite", 'wb') as f:
+	f.write(tflite_model)

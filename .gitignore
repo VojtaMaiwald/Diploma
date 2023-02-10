@@ -2,3 +2,5 @@ __pycache__/
 !nets/
 nets/*
 !nets/MobileNetV2/
+!nets/MobileNetV3Small/
+!nets/MobileNetV3Large/

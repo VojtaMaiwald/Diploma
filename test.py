@@ -7,7 +7,7 @@ import re
 
 WEBCAM = False
 ONE_IMG_TEST = False
-MODEL_PATH = ".\\nets\\MobileNetV2\\MobileNetV2_B32_E25_D0.5_AUGFULL_SHUFFLE"
+MODEL_PATH = ".\\nets\\MobileNetV3Small\\MobileNetV3Small_E25_B16_A_0.75_AUGFULL_SHUFFLE_MINI"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
