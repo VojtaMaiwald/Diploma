@@ -109,7 +109,7 @@ if __name__ == "__main__":
 		validation_steps = test_labels_count // BATCH_SIZE,
 		callbacks = [
 			#ModelCheckpoint(MODEL_PATH + "MODEL_NAME" + f'_{DONE_EPOCHS+epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_VAL_{val_acc:.3f}.tf', monitor = 'val_acc',
+			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
 							save_best_only = False,
 							save_weights_only = False,
 							save_format = 'tf'),
