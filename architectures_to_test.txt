@@ -1,6 +1,5 @@
 MobileNet
 MobileNetV2
-MobileNetV3
 MobileNetV3Small
 MobileNetV3Large
 ConvNeXtSmall
@@ -25,9 +24,9 @@ SqueezeNet
 SpaghettiNet
 ShuffleNet
 ShuffleNetV2
-SqueezeNet
 EfficientDet-D0
 EfficientDet-D1
 EfficientDet-D2
 EfficientDet-D3
 FBNet
+GhostNet

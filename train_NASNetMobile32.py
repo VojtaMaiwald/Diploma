@@ -30,9 +30,9 @@ TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 BATCH_SIZE = 32 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
-AUGMENT = True
-SHUFFLE = False
-MODEL_NAME = "NASNetMobile_E25_B32_AUGFULL"
+AUGMENT = False
+SHUFFLE = True
+MODEL_NAME = "NASNetMobile_E25_B32_SHUFFLE"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -125,5 +125,14 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME, save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
-	print("accuracy:\n", history.history['accuracy'])
-	print("val_accuracy:\n", history.history['val_accuracy'])
+	#print("accuracy:\n", history.history['accuracy'])
+	#print("val_accuracy:\n", history.history['val_accuracy'])
+	f = open(MODEL_PATH + MODEL_NAME + "/stats.txt", "w")
+	f.write("accuracy:\n")
+	f.write(str(history.history['accuracy']))
+	f.write("\n")
+	f.write("val_accuracy:\n")
+	f.write(str(history.history['val_accuracy']))
+	f.write("\n\n")
+	f.close()
+	print(" ***** STATS SAVED ***** ")

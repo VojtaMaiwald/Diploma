@@ -28,13 +28,13 @@ TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
-EPOCHS = 50
+EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-ALPHA = 1.25
-MINIMALISTIC = False
-MODEL_NAME = "MobileNetV3Small_E50_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE"
+ALPHA = 0.75
+MINIMALISTIC = True
+MODEL_NAME = "MobileNetV3Small_E25_B16_A_0.75_AUGFULL_SHUFFLE_MINI"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -64,7 +64,7 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = MobileNetV3Small(classes = 8, weights = None, minimalistic = MINIMALISTIC, alpha = ALPHA, dropout_rate = DROPOUT)
+			model = MobileNetV3Small(classes = 8, weights = None, minimalistic = MINIMALISTIC, alpha = ALPHA)
 			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics = ['accuracy'])
 
 	return model
@@ -109,8 +109,8 @@ if __name__ == "__main__":
 		validation_steps = test_labels_count // BATCH_SIZE,
 		callbacks = [
 			#ModelCheckpoint(MODEL_PATH + "MODEL_NAME" + f'_{DONE_EPOCHS+epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-							save_best_only = False,
+			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
+							save_best_only = True,
 							save_weights_only = False,
 							save_format = 'tf'),
 			],
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 		if layer is Dropout:
 			model.layers.remove(layer)
 	model.save_weights(MODEL_PATH + MODEL_NAME + '_weights', save_format = 'tf', overwrite = True)
-	model.save(MODEL_PATH + MODEL_NAME, save_format = 'tf', overwrite = True)
+	model.save(MODEL_PATH + MODEL_NAME + '_full_model', save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
 	print("accuracy:\n", history.history['accuracy'])
