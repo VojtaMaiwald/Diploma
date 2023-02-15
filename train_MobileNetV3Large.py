@@ -28,7 +28,7 @@ TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
-EPOCHS = 50
+EPOCHS = 25
 DONE_EPOCHS = 20
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 		validation_steps = test_labels_count // BATCH_SIZE,
 		callbacks = [
 			#ModelCheckpoint(MODEL_PATH + "MODEL_NAME" + f'_{DONE_EPOCHS+epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_VAL_{val_acc:.3f}.tf', monitor = 'val_acc',
+			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
 							save_best_only = False,
 							save_weights_only = False,
 							save_format = 'tf'),
