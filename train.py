@@ -14,6 +14,7 @@ from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
+import cv2 as cv
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
@@ -23,16 +24,16 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #ssh mai0042@158.196.109.98
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images2000\\"
 TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 BATCH_SIZE = 14
-EPOCHS = 25
+EPOCHS = 1
 DONE_EPOCHS = 20
 DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = f"MobileNetV2_B128_E25_D0.5"
+MODEL_NAME = f"MobileNetV2_B14_E1_D0.5"
 
 def init():
 	#print(os.getenv("TF_GPU_ALLOCATOR"))
@@ -102,13 +103,13 @@ if __name__ == "__main__":
 		epochs = EPOCHS,
 		validation_data = test_sequence,
 		validation_steps = test_labels_count // BATCH_SIZE,
-		callbacks = [
+		#callbacks = [
 			#ModelCheckpoint(MODEL_PATH + "MODEL_NAME" + f'_{DONE_EPOCHS+epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
-							save_best_only = False,
-							save_weights_only = False,
-							save_format = 'tf'),
-			CSVLogger(MODEL_PATH + MODEL_NAME + '_log_classification.csv', append = True, separator = ';')],
+			#ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = #'val_acc',
+			#				save_best_only = False,
+			#				save_weights_only = False,
+			#				save_format = 'tf'),
+			#CSVLogger(MODEL_PATH + MODEL_NAME + '_log_classification.csv', append = True, separator = ';')],
 		workers = 12,
 		use_multiprocessing = False) # False
 	"""
@@ -121,7 +122,40 @@ if __name__ == "__main__":
 		if layer is Dropout:
 			model.layers.remove(layer)
 	model.save_weights(MODEL_PATH + MODEL_NAME + '_weights', save_format = 'tf', overwrite = True)
-	model.save(MODEL_PATH + MODEL_NAME + '_full_model', save_format = 'tf', overwrite = True)
+	model.save(MODEL_PATH + MODEL_NAME, save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
-	print(history.history["val_acc"])
+	#print(history.history["val_acc"])
+	f = open(MODEL_PATH + MODEL_NAME + "/stats.txt", "w")
+	f.write("accuracy:\n")
+	f.write(str(history.history['accuracy']))
+	f.write("\n")
+	f.write("val_accuracy:\n")
+	f.write(str(history.history['val_accuracy']))
+	f.write("\n\n")
+
+	model = tf.keras.models.load_model(MODEL_PATH + MODEL_NAME)
+	labels = np.load(TEST_LABELS_PATH)
+	predictions = []
+	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
+	images_paths_list.sort(key = natural_keys)
+	errors = 0
+
+	for i in range(len(images_paths_list)):
+		img_path = images_paths_list[i]
+		img = cv.imread(img_path, 1)
+		img = img.reshape(1, 224, 224, 3)
+		prediction = model.predict(img, verbose = 0)[0]
+		predictions.append(np.argmax(prediction))
+		if np.argmax(prediction) != labels[i]:
+			errors += 1
+		evaluation = (1 - (errors / (i + 1))) * 100
+		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
+
+	print("\n")
+	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
+	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	
+	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f.close()
+	print(" ***** STATS SAVED ***** ")
