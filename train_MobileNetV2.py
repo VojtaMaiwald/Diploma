@@ -53,9 +53,6 @@ def init():
 	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
 	return strategy
 
-def root_mean_squared_error(y_true, y_pred):
-	return K.sqrt(K.mean(K.square(y_pred - y_true)))
-
 def load_model(strategy, existingModelPath = None):
 #def load_model(existingModelPath = None):
 	if existingModelPath != None:

@@ -50,9 +50,6 @@ def init():
 			# Memory growth must be set before GPUs have been initialized
 			print(e)
 
-def root_mean_squared_error(y_true, y_pred):
-	return K.sqrt(K.mean(K.square(y_pred - y_true)))
-
 def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
