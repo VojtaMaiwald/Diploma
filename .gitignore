@@ -5,3 +5,4 @@ nets/*
 !nets/MobileNetV3Small/
 !nets/MobileNetV3Large/
 !nets/NASNetMobile/
+!nets/EfficientNetB0/

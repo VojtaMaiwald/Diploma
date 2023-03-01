@@ -2,8 +2,6 @@ MobileNet
 MobileNetV2
 MobileNetV3Small
 MobileNetV3Large
-ConvNeXtSmall
-ConvNeXtTiny
 EfficientNetB0
 EfficientNetB1
 EfficientNetB2

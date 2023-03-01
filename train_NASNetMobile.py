@@ -15,6 +15,7 @@ from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
 from keras import backend as K
+import cv2 as cv
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
@@ -22,15 +23,15 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
-MODEL_PATH = "./nets/MobileNetV3Small/"
-TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
-TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
-TEST_IMAGES_PATH = "/sp1/val_set/images/"
-TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
-EPOCHS = 25
+MODEL_PATH = ".\\nets\\NASNetMobile\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
+TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
+TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
+TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
+BATCH_SIZE = 16 # BATCH_SIZE * strategy.num_replicas_in_sync
+EPOCHS = 1
 IMAGE_SHAPE = (224, 224, 3)
-MODEL_NAME = "NASNetMobile_E25_B8_AUGFULL_SHUFFLE"
+MODEL_NAME = "NASNetMobile_E1_B4_AUGFULL_SHUFFLE"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -48,18 +49,15 @@ def init():
 	#strategy = tf.distribute.MultiWorkerMirroredStrategy()
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.NcclAllReduce())
-	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
-	return strategy
+	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
+	#return strategy
 
-def root_mean_squared_error(y_true, y_pred):
-	return K.sqrt(K.mean(K.square(y_pred - y_true)))
-
-def load_model(strategy, existingModelPath = None):
-#def load_model(existingModelPath = None):
+#def load_model(strategy, existingModelPath = None):
+def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		with strategy.scope():
+		#with strategy.scope():
 			model = NASNetMobile(classes = 8, weights = None)
 			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics = ['accuracy'])
 
@@ -87,10 +85,10 @@ def load_dataset(labels_path, images_path):
 	return sequence, len(images_paths_list), weights
 
 if __name__ == "__main__":
-	strategy = init()
-	#init()
-	model = load_model(strategy)
-	#model = load_model()
+	#strategy = init()
+	init()
+	#model = load_model(strategy)
+	model = load_model()
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count, train_weights = load_dataset(TRAIN_LABELS_PATH, TRAIN_IMAGES_PATH)
 	test_sequence, test_labels_count, test_weights = load_dataset(TEST_LABELS_PATH, TEST_IMAGES_PATH)
@@ -134,5 +132,29 @@ if __name__ == "__main__":
 	f.write("val_accuracy:\n")
 	f.write(str(history.history['val_accuracy']))
 	f.write("\n\n")
+
+	model = tf.keras.models.load_model(MODEL_PATH + MODEL_NAME)
+	labels = np.load(TEST_LABELS_PATH)
+	predictions = []
+	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
+	images_paths_list.sort(key = natural_keys)
+	errors = 0
+
+	for i in range(len(images_paths_list)):
+		img_path = images_paths_list[i]
+		img = cv.imread(img_path, 1)
+		img = img.reshape(1, 224, 224, 3)
+		prediction = model.predict(img, verbose = 0)[0]
+		predictions.append(np.argmax(prediction))
+		if np.argmax(prediction) != labels[i]:
+			errors += 1
+		evaluation = (1 - (errors / (i + 1))) * 100
+		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
+
+	print("\n")
+	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
+	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	
+	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	f.close()
 	print(" ***** STATS SAVED ***** ")
