@@ -25,19 +25,19 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #ssh mai0042@158.196.109.98
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images2000\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images10000\\"
 TRAIN_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_aro.npy"
 TRAIN_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_val.npy"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
 TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
-BATCH_SIZE = 12
-EPOCHS = 100
+BATCH_SIZE = 10
+EPOCHS = 50
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-MODEL_NAME = f"MobileNetV2_AroVal_B4_E1_D0.2"
+MODEL_NAME = f"MobileNetV2_AroVal_B10_E50_D0.2"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -129,18 +129,20 @@ if __name__ == "__main__":
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
 	f = open(MODEL_PATH + MODEL_NAME + "/stats.txt", "w")
-	f.write("accuracy:\n")
-	f.write(str(history.history['accuracy']))
+	f.write("root_mean_squared_error:\n")
+	f.write(str(history.history['root_mean_squared_error']))
 	f.write("\n")
-	f.write("val_accuracy:\n")
-	f.write(str(history.history['val_accuracy']))
+	f.write("val_root_mean_squared_error:\n")
+	f.write(str(history.history['val_root_mean_squared_error']))
 	f.write("\n\n")
 
 	model = tf.keras.models.load_model(MODEL_PATH + MODEL_NAME)
-	labels = np.load(TEST_LABELS_PATH)
+	labels_aro = np.load(TRAIN_ARO_LABELS_PATH)
+	labels_val = np.load(TEST_VAL_LABELS_PATH)
 	predictions = []
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
+	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
 	errors = 0
 
 	for i in range(len(images_paths_list)):
