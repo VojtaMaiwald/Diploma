@@ -14,7 +14,7 @@ from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
 from sequence_loader import SequenceLoader
-from keras import backend as K
+import cv2 as cv
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
