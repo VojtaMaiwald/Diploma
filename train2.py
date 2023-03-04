@@ -25,19 +25,19 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #ssh mai0042@158.196.109.98
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images10000\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
 TRAIN_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_aro.npy"
 TRAIN_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_val.npy"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
 TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
-BATCH_SIZE = 10
-EPOCHS = 50
+BATCH_SIZE = 8
+EPOCHS = 10
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-MODEL_NAME = f"MobileNetV2_AroVal_B10_E50_D0.2"
+MODEL_NAME = f"MobileNetV2_AroVal_B8_E10_D0.2"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 		validation_data = test_sequence,
 		validation_steps = test_labels_count // BATCH_SIZE,
 		callbacks = [
-			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf', monitor = 'val_acc',
+			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf',
 							save_best_only = False,
 							save_weights_only = False,
 							save_format = 'tf'),
@@ -128,6 +128,7 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME, save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
+
 	f = open(MODEL_PATH + MODEL_NAME + "/stats.txt", "w")
 	f.write("root_mean_squared_error:\n")
 	f.write(str(history.history['root_mean_squared_error']))
@@ -139,27 +140,38 @@ if __name__ == "__main__":
 	model = tf.keras.models.load_model(MODEL_PATH + MODEL_NAME)
 	labels_aro = np.load(TRAIN_ARO_LABELS_PATH)
 	labels_val = np.load(TEST_VAL_LABELS_PATH)
-	predictions = []
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
-	errors = 0
+	RMSE_avg_aro = 0
+	RMSE_avg_val = 0
+	file_string = ""
+	#ground_truth = [[], []]
+	#predictions = [[], []]
 
 	for i in range(len(images_paths_list)):
 		img_path = images_paths_list[i]
 		img = cv.imread(img_path, 1)
 		img = img.reshape(1, 224, 224, 3)
-		prediction = model.predict(img, verbose = 0)[0]
-		predictions.append(np.argmax(prediction))
-		if np.argmax(prediction) != labels[i]:
-			errors += 1
-		evaluation = (1 - (errors / (i + 1))) * 100
-		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
+
+		aro_pred, val_pred = model.predict(img, verbose = 0)[0]
+		aro_label, val_label = labels[i]
+		RMSE_avg_aro = ((RMSE_avg_aro * i) + np.abs(aro_pred - aro_label)) / (i + 1)
+		RMSE_avg_val = ((RMSE_avg_val * i) + np.abs(val_pred - val_label)) / (i + 1)
+		file_string += f"\n{aro_label:.8f}\t{aro_pred:.8f}\t{val_label:.8f}\t{val_pred:.8f}"
+
+		print(f"{i} / {len(images_paths_list)}\t\tArousal avg RMSE: {RMSE_avg_aro:.4f}\t\tValence avg RMSE: {RMSE_avg_val:.4f}        ", end = "\r")
+
+		#ground_truth[0].append(aro_label)
+		#ground_truth[1].append(val_label)
+		#predictions[0].append(aro_pred)
+		#predictions[1].append(val_pred)
 
 	print("\n")
-	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
-	
-	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.4f}\nValence average RMSE: {RMSE_avg_val:.4f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.4f}")
+	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.8f}\nValence average RMSE: {RMSE_avg_val:.8f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.8f}")
+	f.write("\n\n")
+	f.write("GT_aro\tpred_aro\tGT_val\tpred_val")
+	f.write(file_string)
 	f.close()
 	print(" ***** STATS SAVED ***** ")

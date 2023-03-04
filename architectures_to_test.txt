@@ -1,28 +1,29 @@
-MobileNet
-MobileNetV2
-MobileNetV3Small
-MobileNetV3Large
-EfficientNetB0
-EfficientNetB1
-EfficientNetB2
-EfficientNetB3
-EfficientNetV2B0
-EfficientNetV2B1
-EfficientNetV2B2
-EfficientNetV2B3
-EfficientNetV2S
-NASNetMobile
+MobileNet						from keras.applications import MobileNet
+MobileNetV2						from keras.applications import MobileNetV2
+MobileNetV3Small				from keras.applications import MobileNetV3Small
+MobileNetV3Large				from keras.applications import MobileNetV3Large
+EfficientNetB0					from keras.applications import EfficientNetB0
+EfficientNetB1					from keras.applications import EfficientNetB1
+EfficientNetB2					from keras.applications import EfficientNetB2
+EfficientNetB3					from keras.applications import EfficientNetB3
+EfficientNetV2B0				from keras.applications import EfficientNetV2B0
+EfficientNetV2B1				from keras.applications import EfficientNetV2B1
+EfficientNetV2B2				from keras.applications import EfficientNetV2B2
+EfficientNetV2B3				from keras.applications import EfficientNetV2B3
+EfficientNetV2S					from keras.applications import EfficientNetV2S
+NASNetMobile					external file
+MNasNet
 EfficientNet-Lite0
 EfficientNet-Lite1
 EfficientNet-Lite2
 EfficientNet-Lite3
 EfficientNet-Lite4
-DenseNet-121
-ResNet-18
-SqueezeNet
+DenseNet-121					from keras.applications import DenseNet121
+ResNet-18						external file
+SqueezeNet						external file
 SpaghettiNet
-ShuffleNet
-ShuffleNetV2
+ShuffleNet						external file
+ShuffleNetV2					external file
 EfficientDet-D0
 EfficientDet-D1
 EfficientDet-D2
