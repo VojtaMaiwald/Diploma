@@ -21,7 +21,6 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-#ssh mai0042@158.196.109.98
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
 TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images2000\\"

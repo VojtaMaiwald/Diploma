@@ -22,7 +22,6 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-#ssh mai0042@158.196.109.98
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
 TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
@@ -35,8 +34,8 @@ BATCH_SIZE = 8
 EPOCHS = 10
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
-AUGMENT = True
-SHUFFLE = True
+AUGMENT = False
+SHUFFLE = False
 MODEL_NAME = f"MobileNetV2_AroVal_B8_E10_D0.2"
 
 def init():
@@ -58,6 +57,9 @@ def init():
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
 	#return strategy
 
+def root_mean_squared_error(y_true, y_pred):
+    return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
 #def load_model(strategy, existingModelPath = None):
 def load_model(existingModelPath = None):
 	if existingModelPath != None:
@@ -71,7 +73,7 @@ def load_model(existingModelPath = None):
 			x = Dropout(DROPOUT)(x)
 			predictions = Dense(2, activation = 'linear')(x)
 			model = Model(inputs = base_model.input, outputs = predictions)
-			model.compile(loss = MeanSquaredError(), optimizer = Adam(learning_rate = 0.0001), metrics = [RootMeanSquaredError()])
+			model.compile(loss = "mean_squared_error", optimizer = Adam(learning_rate = 0.00003), metrics = [root_mean_squared_error])
 
 	return model
 
@@ -81,14 +83,14 @@ def atoi(text):
 def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
-def load_dataset(aro_labels_path, val_labels_path, images_path):
+def load_dataset(aro_labels_path, val_labels_path, images_path, train = True):
 	labels_aro = np.load(aro_labels_path)
 	labels_val = np.load(val_labels_path)
 	images_paths_list = glob.glob(images_path + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
 
-	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, SHUFFLE, AUGMENT)
+	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, SHUFFLE and train, AUGMENT and train)
 	return sequence, len(images_paths_list)
 
 if __name__ == "__main__":
@@ -98,7 +100,7 @@ if __name__ == "__main__":
 	model = load_model()
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count = load_dataset(TRAIN_ARO_LABELS_PATH, TRAIN_VAL_LABELS_PATH, TRAIN_IMAGES_PATH)
-	test_sequence, test_labels_count = load_dataset(TRAIN_ARO_LABELS_PATH, TEST_VAL_LABELS_PATH, TEST_IMAGES_PATH)
+	test_sequence, test_labels_count = load_dataset(TEST_ARO_LABELS_PATH, TEST_VAL_LABELS_PATH, TEST_IMAGES_PATH, False)
 	print(" ***** SEQUENCES READY ***** ")
 
 	history = model.fit(
@@ -117,7 +119,7 @@ if __name__ == "__main__":
 		use_multiprocessing = False) # False
 	"""
 	use_multiprocessing:
-	Boolean. Used for generator or keras.utils.Sequence input only. If True, use process-based threading. If unspecified, use_multiprocessing will default to False. Note that because this implementation relies on multiprocessing, you should not pass non-picklable arguments to the generator as they can't be passed easily to children processes.
+	Boolean. Used for generator or keras.utils.Sequence input only. If True, use process-based threading. If unspecified, use_multiprocessing will default to False. Note that because this mplementation relies on multiprocessing, you should #not pass non-picklable arguments to the generator as they can't be passed easily to children processes.
 	"""
 	print(" ***** MODEL FITTED ***** ")
 
@@ -138,16 +140,16 @@ if __name__ == "__main__":
 	f.write("\n\n")
 
 	model = tf.keras.models.load_model(MODEL_PATH + MODEL_NAME)
-	labels_aro = np.load(TRAIN_ARO_LABELS_PATH)
+	labels_aro = np.load(TEST_ARO_LABELS_PATH)
 	labels_val = np.load(TEST_VAL_LABELS_PATH)
 	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
 	images_paths_list.sort(key = natural_keys)
 	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
 	RMSE_avg_aro = 0
 	RMSE_avg_val = 0
+	RMSE_avg_aro2 = 0
+	RMSE_avg_val2 = 0
 	file_string = ""
-	#ground_truth = [[], []]
-	#predictions = [[], []]
 
 	for i in range(len(images_paths_list)):
 		img_path = images_paths_list[i]
@@ -156,16 +158,15 @@ if __name__ == "__main__":
 
 		aro_pred, val_pred = model.predict(img, verbose = 0)[0]
 		aro_label, val_label = labels[i]
-		RMSE_avg_aro = ((RMSE_avg_aro * i) + np.abs(aro_pred - aro_label)) / (i + 1)
-		RMSE_avg_val = ((RMSE_avg_val * i) + np.abs(val_pred - val_label)) / (i + 1)
+		RMSE_avg_aro += (aro_pred - aro_label) ** 2
+		RMSE_avg_val += (val_pred - val_label) ** 2
+
 		file_string += f"\n{aro_label:.8f}\t{aro_pred:.8f}\t{val_label:.8f}\t{val_pred:.8f}"
 
-		print(f"{i} / {len(images_paths_list)}\t\tArousal avg RMSE: {RMSE_avg_aro:.4f}\t\tValence avg RMSE: {RMSE_avg_val:.4f}        ", end = "\r")
+		print(f"{i} / {len(images_paths_list)}\t\tArousal avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_aro)):.4f}\t\tValence avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_val)):.4f}        ", end = "\r")
 
-		#ground_truth[0].append(aro_label)
-		#ground_truth[1].append(val_label)
-		#predictions[0].append(aro_pred)
-		#predictions[1].append(val_pred)
+	RMSE_avg_aro = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_aro)
+	RMSE_avg_val = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_val)
 
 	print("\n")
 	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.4f}\nValence average RMSE: {RMSE_avg_val:.4f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.4f}")

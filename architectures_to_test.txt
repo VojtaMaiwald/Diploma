@@ -30,3 +30,9 @@ EfficientDet-D2
 EfficientDet-D3
 FBNet
 GhostNet
+CondenseNet
+ESPNet
+ESPNetV2
+DiCENet
+ChamNet
+MixNet
