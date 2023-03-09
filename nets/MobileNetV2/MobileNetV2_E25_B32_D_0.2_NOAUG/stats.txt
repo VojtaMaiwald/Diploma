@@ -1,4 +1,4 @@
-.\nets\MobileNetV2\MobileNetV2_E25_B32_D_0.2_NOAUG
+MobileNetV2_E25_B32_D_0.2_NOAUG
 Images: 3999
 Errors: 2348
 Success rate: 41.285 %

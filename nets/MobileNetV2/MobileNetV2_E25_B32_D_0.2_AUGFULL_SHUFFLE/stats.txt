@@ -1,4 +1,4 @@
-.\nets\MobileNetV2\MobileNetV2_E25_B32_D_0.2_AUGFULL_SHUFFLE
+MobileNetV2_E25_B32_D_0.2_AUGFULL_SHUFFLE
 Images: 3999
 Errors: 1926
 Success rate: 51.838 %
