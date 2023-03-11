@@ -30,13 +30,13 @@ TRAIN_VAL_LABELS_PATH = "/sp1/train_set/all_labels_val.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_ARO_LABELS_PATH = "/sp1/val_set/all_labels_aro.npy"
 TEST_VAL_LABELS_PATH = "/sp1/val_set/all_labels_val.npy"
-BATCH_SIZE = 8
+BATCH_SIZE = 16 * 3
 EPOCHS = 25
-DROPOUT = 0.5
+DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-MODEL_NAME = f"MobileNetV2_AroVal_B8_E25_D0.5_Adam_0.01_AUGFULL_SHUFFLE"
+MODEL_NAME = "MobileNetV2_AroVal_B16_E25_D0.2_Adam_0.001_AUGFULL_SHUFFLE"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -70,7 +70,7 @@ def load_model(strategy, existingModelPath = None):
 			x = Dropout(DROPOUT)(x)
 			predictions = Dense(2, activation = 'linear')(x)
 			model = Model(inputs = base_model.input, outputs = predictions)
-			model.compile(loss = MeanSquaredError(), optimizer = Adam(), metrics = [RootMeanSquaredError()])
+			model.compile(loss = MeanSquaredError(), optimizer = Adam(learning_rate = 0.001), metrics = [RootMeanSquaredError()])
 
 	return model
 
