@@ -5,12 +5,9 @@ MobileNetV3Large				from keras.applications import MobileNetV3Large
 EfficientNetB0					from keras.applications import EfficientNetB0
 EfficientNetB1					from keras.applications import EfficientNetB1
 EfficientNetB2					from keras.applications import EfficientNetB2
-EfficientNetB3					from keras.applications import EfficientNetB3
 EfficientNetV2B0				from keras.applications import EfficientNetV2B0
 EfficientNetV2B1				from keras.applications import EfficientNetV2B1
 EfficientNetV2B2				from keras.applications import EfficientNetV2B2
-EfficientNetV2B3				from keras.applications import EfficientNetV2B3
-EfficientNetV2S					from keras.applications import EfficientNetV2S
 NASNetMobile					external file
 MNasNet
 DenseNet-121					from keras.applications import DenseNet121
@@ -20,8 +17,8 @@ SpaghettiNet
 ShuffleNet						external file
 ShuffleNetV2					external file
 FBNet
-GhostNet
-CondenseNet					    external file
+GhostNet						external file
+CondenseNet					    only Pytorch implementation
 ESPNet
 ESPNetV2
 DiCENet
