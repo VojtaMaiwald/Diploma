@@ -3,12 +3,8 @@ import tensorflow as tf
 import cv2 as cv
 import glob
 import re
-from keras.applications import MobileNetV2
-from keras.layers import Dense, Dropout, GlobalAveragePooling2D
-from keras.models import Model
 
-MODEL_PATH = ".\\nets_tflite\\model_experimental.tflite"
-#MODEL_PATH = ".\\nets_tflite\\model_optimized.tflite"
+MODEL_PATH = ".\\nets_tflite\\EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
@@ -113,8 +109,8 @@ def testValDataset():
 		print(f"{i} / {len(images_paths_list)}\t\tSuccess rate: {evaluation:.3f} %        ", end = "\r")
 
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"Images: {len(images_paths_list)}\t\tErrors: {errors}\t\tSuccess rate: {evaluation:.3f} %            ")
-	print(f"Confusion matrix:\n {tf.math.confusion_matrix(labels, predictions)}")
+	print(f"\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %")
+	print(f"\nConfusion matrix:\n {tf.math.confusion_matrix(labels, predictions)}")
 
 def atoi(text):
 	return int(text) if text.isdigit() else text
