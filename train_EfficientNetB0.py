@@ -9,7 +9,7 @@ from keras.applications import EfficientNetB0
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
@@ -28,12 +28,14 @@ TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 32 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 4 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-MODEL_NAME = "EfficientNetB0_E25_B16_AUGFULL_SHUFFLE"
+LEARNING_RATE = 0.01
+ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
+MODEL_NAME = f"EfficientNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -61,15 +63,15 @@ def load_model(strategy, existingModelPath = None):
 	else:
 		with strategy.scope():
 			model = EfficientNetB0(classes = 8, weights = None)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = 0.0001), metrics = ['accuracy'])
+			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
 	return model
 
 def atoi(text):
-    return int(text) if text.isdigit() else text
+	return int(text) if text.isdigit() else text
 
 def natural_keys(text):
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def load_dataset(labels_path, images_path):
 	
@@ -80,8 +82,10 @@ def load_dataset(labels_path, images_path):
 	weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(labels), y = labels)
 	weights = dict(enumerate(weights))
 	labels = to_categorical(labels, num_classes = 8)
+	augment = True
+	shuffle = True
 
-	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, SHUFFLE, AUGMENT)
+	sequence = SequenceLoader(images_paths_list, labels, BATCH_SIZE, IMAGE_SHAPE, shuffle, augment)
 	return sequence, len(images_paths_list), weights
 
 if __name__ == "__main__":
@@ -122,6 +126,7 @@ if __name__ == "__main__":
 	model.save(MODEL_PATH + MODEL_NAME, save_format = 'tf', overwrite = True)
 	print(" ***** ENDING ***** ")
 	np.save(MODEL_PATH + '_HIST', history.history)
+	
 	f = open(MODEL_PATH + MODEL_NAME + "/stats.txt", "w")
 	f.write("accuracy:\n")
 	f.write(str(history.history['accuracy']))
@@ -150,8 +155,8 @@ if __name__ == "__main__":
 
 	print("\n")
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	
-	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	f.close()
 	print(" ***** STATS SAVED ***** ")

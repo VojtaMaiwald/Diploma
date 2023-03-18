@@ -24,12 +24,13 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
 MODEL_PATH = ".\\nets\\SqueezeNet\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
+#TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images10000\\"
 TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
-BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
-EPOCHS = 25
+BATCH_SIZE = 4 # BATCH_SIZE * strategy.num_replicas_in_sync
+EPOCHS = 1
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
@@ -70,10 +71,10 @@ def load_model(existingModelPath = None):
 	return model
 
 def atoi(text):
-    return int(text) if text.isdigit() else text
+	return int(text) if text.isdigit() else text
 
 def natural_keys(text):
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def load_dataset(labels_path, images_path):
 	

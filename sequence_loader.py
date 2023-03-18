@@ -7,12 +7,12 @@ from keras.utils.image_utils import load_img, img_to_array
 class SequenceLoader(keras.utils.Sequence):
 	def __init__(self, images_paths, labels, batch_size, image_shape, shuffle = False, augment = False):
 		"""Constructor"""
-		self.images_paths = images_paths            # array of image paths
-		self.labels = labels                        # array of label paths
-		self.batch_size = batch_size                # batch size
-		self.image_shape = image_shape              # image dimensions
-		self.shuffle = shuffle                      # shuffle images
-		self.augment = augment                      # augment images
+		self.images_paths = images_paths			# array of image paths
+		self.labels = labels						# array of label paths
+		self.batch_size = batch_size				# batch size
+		self.image_shape = image_shape				# image dimensions
+		self.shuffle = shuffle						# shuffle images
+		self.augment = augment						# augment images
 		self.indices = range(len(labels))
 
 	def __len__(self):

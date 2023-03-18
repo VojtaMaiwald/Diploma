@@ -32,12 +32,12 @@ TEST_ARO_LABELS_PATH = "/sp1/val_set/all_labels_aro.npy"
 TEST_VAL_LABELS_PATH = "/sp1/val_set/all_labels_val.npy"
 BATCH_SIZE = 16 * 3
 EPOCHS = 25
-DROPOUT = 0.2
+DROPOUT = 0.5
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
 ALPHA = 1
-MINIMALISTIC = True
+MINIMALISTIC = False
 LEARNING_RATE = 0.01
 ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "") + ("_MINI" if MINIMALISTIC else "")
 MODEL_NAME = f"MobileNetV3Large_AroVal_E{EPOCHS}_B{BATCH_SIZE // 3}_D{DROPOUT}_SDG{LEARNING_RATE}{ENDING_STRING}"
@@ -79,10 +79,10 @@ def load_model(strategy, existingModelPath = None):
 	return model
 
 def atoi(text):
-    return int(text) if text.isdigit() else text
+	return int(text) if text.isdigit() else text
 
 def natural_keys(text):
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def load_dataset(aro_labels_path, val_labels_path, images_path, train = True):
 	labels_aro = np.load(aro_labels_path)

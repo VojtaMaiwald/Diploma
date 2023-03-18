@@ -1,168 +1,149 @@
-#https://github.com/CarloLepelaars/ghostnet_tf2
+#https://github.com/YeFeng1993/GhostNet-Keras
 
-from keras.models import Model
-from keras import backend as K
-from keras.layers import Conv2D, BatchNormalization, Activation, GlobalAveragePooling2D, Lambda, Reshape, DepthwiseConv2D, Layer, Concatenate, add
+import os
+import math
+from keras import Input, Model
+from keras.layers import Conv2D, BatchNormalization, Activation, GlobalAveragePooling2D, Dropout, Lambda, Concatenate, DepthwiseConv2D, Reshape, add, multiply
+from keras.optimizers import Adam
+from keras.utils import plot_model
+from keras import Input, Model
+from keras.activations import softmax
+import keras.backend as K
+import tensorflow as tf
 
-from math import ceil
+def reshapes(x):
+	y = Reshape((1,1,int(x.shape[1])))(x)
+	return y
 
-class GhostModule(Layer):
-    """
-    The main Ghost module
-    """
-    def __init__(self, out, ratio, convkernel, dwkernel):
-        super(GhostModule, self).__init__()
-        self.ratio = ratio
-        self.out = out
-        self.conv_out_channel = ceil(self.out * 1.0 / ratio)
-        self.conv = Conv2D(int(self.conv_out_channel), (convkernel, convkernel), use_bias=False,
-                           strides=(1, 1), padding='same', activation=None)
-        self.depthconv = DepthwiseConv2D(dwkernel, 1, padding='same', use_bias=False,
-                                         depth_multiplier=ratio-1, activation=None)
-        self.slice = Lambda(self._return_slices, arguments={'channel': int(self.out - self.conv_out_channel)})
-        self.concat = Concatenate()
+def softmaxs(x):
+	y = softmax(x)
+	return y
 
-    @staticmethod
-    def _return_slices(x, channel):
-        return x[:, :, :, :channel]
+def slices(x,channel):
+	y = x[:,:,:,:channel] 
+	return y
 
-    def call(self, inputs):
-        x = self.conv(inputs)
-        if self.ratio == 1:
-            return x
-        dw = self.depthconv(x)
-        dw = self.slice(dw)
-        output = self.concat([x, dw])
-        return output
+def squeezes(x):
+	y = K.squeeze(x,1)
+	return y
 
-class SEModule(Layer):
-    """
-    A squeeze and excite module
-    """
-    def __init__(self, filters, ratio):
-        super(SEModule, self).__init__()
-        self.pooling = GlobalAveragePooling2D()
-        self.reshape = Lambda(self._reshape)
-        self.conv1 = Conv2D(int(filters / ratio), (1, 1), strides=(1, 1), padding='same',
-                           use_bias=False, activation=None)
-        self.conv2 = Conv2D(int(filters), (1, 1), strides=(1, 1), padding='same',
-                           use_bias=False, activation=None)
-        self.relu = Activation('relu')
-        self.hard_sigmoid = Activation('hard_sigmoid')
+def GhostModule(x,outchannels,ratio,convkernel,dwkernel,padding='same',strides=1,data_format='channels_last', use_bias=False,activation=None):
+	conv_out_channel = math.ceil(outchannels*1.0/ratio)
+	x = Conv2D(int(conv_out_channel),(convkernel,convkernel),strides=(strides,strides),padding=padding,data_format=data_format, activation=activation,use_bias=use_bias)(x)
+	if(ratio==1):
+		return x
+	
+	dw = DepthwiseConv2D(dwkernel,strides,padding=padding,depth_multiplier=ratio-1,data_format=data_format, activation=activation,use_bias=use_bias)(x)
+	#dw = dw[:,:,:,:int(outchannels-conv_out_channel)]
+	dw = Lambda(slices,arguments={'channel':int(outchannels-conv_out_channel)})(dw)
+	x = Concatenate(axis=-1)([x,dw])
+	return x
 
-    @staticmethod
-    def _reshape(x):
-        return Reshape((1, 1, int(x.shape[1])))(x)
+def SEModule(x,outchannels,ratio):
+	x1 = GlobalAveragePooling2D(data_format='channels_last')(x)
+	#squeeze = Reshape((1,1,int(x1.shape[1])))(x1)
+	squeeze = Lambda(reshapes)(x1)
+	fc1 = Conv2D(int(outchannels/ratio),(1,1),strides=(1,1),padding='same',data_format='channels_last', use_bias=False,activation=None)(squeeze)
+	relu= Activation('relu')(fc1)
+	fc2 = Conv2D(int(outchannels),(1,1),strides=(1,1),padding='same',data_format='channels_last', use_bias=False,activation=None)(relu)
+	excitation = Activation('hard_sigmoid')(fc2)
+	#scale = x * excitation
+	scale = Lambda(multiply)([x, excitation])
+	#scale = multiply([x, excitation])
+	return scale
 
-    @staticmethod
-    def _excite(x, excitation):
-        """
-        Multiply by an excitation factor
-        :param x: A Tensorflow Tensor
-        :param excitation: A float between 0 and 1
-        :return:
-        """
-        return x * excitation
+def GhostBottleneck(x,dwkernel,strides,exp,out,ratio,use_se):
+	x1 = DepthwiseConv2D(dwkernel,strides,padding='same',depth_multiplier=ratio-1,data_format='channels_last', activation=None,use_bias=False)(x)
+	x1 = BatchNormalization(axis=-1)(x1)
+	x1 = Conv2D(out,(1,1),strides=(1,1),padding='same',data_format='channels_last', activation=None,use_bias=False)(x1)
+	x1 = BatchNormalization(axis=-1)(x1)
+	y = GhostModule(x,exp,ratio,1,3)
+	y = BatchNormalization(axis=-1)(y)
+	y = Activation('relu')(y)
+	if(strides>1):
+		y = DepthwiseConv2D(dwkernel,strides,padding='same',depth_multiplier=ratio-1,data_format='channels_last', activation=None,use_bias=False)(y)
+		y = BatchNormalization(axis=-1)(y)
+		y = Activation('relu')(y)
+	if(use_se==True):
+		y = SEModule(y,exp,ratio)
+	y = GhostModule(y,out,ratio,1,3)
+	y = BatchNormalization(axis=-1)(y)
+	y = add([x1,y])
+	return y
 
-    def call(self, inputs):
-        x = self.reshape(self.pooling(inputs))
-        x = self.relu(self.conv1(x))
-        excitation = self.hard_sigmoid(self.conv2(x))
-        x = Lambda(self._excite, arguments={'excitation': excitation})(inputs)
-        return x
+class GhostNet(object):
+	def __init__(self, classes, input_shape):
+		self.classes = classes
+		self.input_shape = input_shape
+		self.model = None
+		self.net()
+		self.layers = self.model.layers
 
-class GBNeck(Layer):
-    """
-    The GhostNet Bottleneck
-    """
-    def __init__(self, dwkernel, strides, exp, out, ratio, use_se):
-        super(GBNeck, self).__init__()
-        self.strides = strides
-        self.use_se = use_se
-        self.conv = Conv2D(out, (1, 1), strides=(1, 1), padding='same',
-                           activation=None, use_bias=False)
-        self.relu = Activation('relu')
-        self.depthconv1 = DepthwiseConv2D(dwkernel, strides, padding='same', depth_multiplier=ratio-1,
-                                         activation=None, use_bias=False)
-        self.depthconv2 = DepthwiseConv2D(dwkernel, strides, padding='same', depth_multiplier=ratio-1,
-                                         activation=None, use_bias=False)
-        for i in range(5):
-            setattr(self, f"batchnorm{i+1}", BatchNormalization())
-        self.ghost1 = GhostModule(exp, ratio, 1, 3)
-        self.ghost2 = GhostModule(out, ratio, 1, 3)
-        self.se = SEModule(exp, ratio)
+	def save_weights(self, name, save_format, overwrite):
+		self.model.save_weights(name, save_format = save_format, overwrite = overwrite)
+		
+	def save(self, name, save_format, overwrite):
+		self.model.save(name, save_format = save_format, overwrite = overwrite)
 
-    def call(self, inputs):
-        x = self.batchnorm1(self.depthconv1(inputs))
-        x = self.batchnorm2(self.conv(x))
+	def compile(self, loss, optimizer, metrics):
+		self.model.compile(loss = loss, optimizer = optimizer, metrics = metrics)
 
-        y = self.relu(self.batchnorm3(self.ghost1(inputs)))
-        # Extra depth conv if strides higher than 1
-        if self.strides > 1:
-            y = self.relu(self.batchnorm4(self.depthconv2(y)))
-        # Squeeze and excite
-        if self.use_se:
-            y = self.se(y)
-        y = self.batchnorm5(self.ghost2(y))
-        # Skip connection
-        return add([x, y])
+	def fit(self, train_sequence, steps_per_epoch, class_weight, epochs, validation_data, validation_steps, callbacks, workers, use_multiprocessing):
+		return self.model.fit(
+			train_sequence,
+			steps_per_epoch = steps_per_epoch,
+			class_weight = class_weight,
+			epochs = epochs,
+			validation_data = validation_data,
+			validation_steps = validation_steps,
+			callbacks = callbacks,
+			workers = workers,
+			use_multiprocessing = use_multiprocessing
+		)
+ 
+	def net(self):
+		inputdata = Input(shape=self.input_shape)
+		
+		x = Conv2D(16,(3,3),strides=(2,2),padding='same',data_format='channels_last',activation=None,use_bias=False)(inputdata)
+		x = BatchNormalization(axis=-1)(x)
+		x = Activation('relu')(x)
+	
+		x = GhostBottleneck(x,3,1,16,16,2,False)
+		x = GhostBottleneck(x,3,2,48,24,2,False)
+		x = GhostBottleneck(x,3,1,72,24,2,False)
+		x = GhostBottleneck(x,5,2,72,40,2,True)
+		x = GhostBottleneck(x,5,1,120,40,2,True)
+		x = GhostBottleneck(x,3,2,240,80,2,False)
+		x = GhostBottleneck(x,3,1,200,80,2,False)
+		x = GhostBottleneck(x,3,1,184,80,2,False)
+		x = GhostBottleneck(x,3,1,184,80,2,False)
+		x = GhostBottleneck(x,3,1,480,112,2,True)
+		x = GhostBottleneck(x,3,1,672,112,2,True)
+		x = GhostBottleneck(x,5,2,672,160,2,True)
+		x = GhostBottleneck(x,5,1,960,160,2,False)
+		x = GhostBottleneck(x,5,1,960,160,2,True)
+		x = GhostBottleneck(x,5,1,960,160,2,False)
+		x = GhostBottleneck(x,5,1,960,160,2,True)
+	
+		x = Conv2D(960,(1,1),strides=(1,1),padding='same',data_format='channels_last',activation=None,use_bias=False)(x)
+		x = BatchNormalization(axis=-1)(x)
+		x = Activation('relu')(x)
 
+		x = GlobalAveragePooling2D(data_format='channels_last')(x)
+		#x = Reshape((1,1,int(x.shape[1])))(x)
+		x = Lambda(reshapes)(x)
+		x = Conv2D(1280,(1,1),strides=(1,1),padding='same',data_format='channels_last',activation=None,use_bias=False)(x)
+		x = BatchNormalization(axis=-1)(x)
+		x = Activation('relu')(x)
 
-class GhostNet(Model):
-    """
-    The main GhostNet architecture as specified in "GhostNet: More Features from Cheap Operations"
-    Paper:
-    https://arxiv.org/pdf/1911.11907.pdf
-    """
-    def __init__(self, classes):
-        super(GhostNet, self).__init__()
-        self.classes = classes
-        self.conv1 = Conv2D(16, (3, 3), strides=(2, 2), padding='same',
-                            activation=None, use_bias=False)
-        self.conv2 = Conv2D(960, (1, 1), strides=(1, 1), padding='same', data_format='channels_last',
-                            activation=None, use_bias=False)
-        self.conv3 = Conv2D(1280, (1, 1), strides=(1, 1), padding='same',
-                            activation=None, use_bias=False)
-        self.conv4 = Conv2D(self.classes, (1, 1), strides=(1, 1), padding='same',
-                            activation=None, use_bias=False)
-        for i in range(3):
-            setattr(self, f"batchnorm{i+1}", BatchNormalization())
-        self.relu = Activation('relu')
-        self.softmax = Activation('softmax')
-        self.squeeze = Lambda(self._squeeze)
-        self.reshape = Lambda(self._reshape)
-        self.pooling = GlobalAveragePooling2D()
+		x = Dropout(0.05)(x)
+		x = Conv2D(self.classes,(1,1),strides=(1,1),padding='same',data_format='channels_last',activation=None,use_bias=False)(x)
+		#x = K.squeeze(x,1)
+		#x = K.squeeze(x,1)
+		#out = softmax(x)
+		x = Lambda(squeezes)(x)
+		x = Lambda(squeezes)(x)
+		out = Lambda(softmaxs)(x)
 
-        self.dwkernels = [3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5]
-        self.strides = [1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]
-        self.exps = [16, 48, 72, 72, 120, 240, 200, 184, 184, 480, 672, 672, 960, 960, 960, 960]
-        self.outs = [16, 24, 24, 40, 40, 80, 80, 80, 80, 112, 112, 160, 160, 160, 160, 160]
-        self.ratios = [2] * 16
-        self.use_ses = [False, False, False, True, True, False, False, False,
-                        False, True, True, True, False, True, False, True]
-        for i, args in enumerate(zip(self.dwkernels, self.strides, self.exps, self.outs, self.ratios, self.use_ses)):
-            setattr(self, f"gbneck{i}", GBNeck(*args))
-
-    @staticmethod
-    def _squeeze(x):
-        """
-        Remove all axes with a dimension of 1
-        """
-        return K.squeeze(x, 1)
-
-    @staticmethod
-    def _reshape(x):
-        return Reshape((1, 1, int(x.shape[1])))(x)
-
-    def call(self, inputs):
-        x = self.relu(self.batchnorm1(self.conv1(inputs)))
-        # Iterate through Ghost Bottlenecks
-        for i in range(16):
-            x = getattr(self, f"gbneck{i}")(x)
-        x = self.relu(self.batchnorm2(self.conv2(x)))
-        x = self.reshape(self.pooling(x))
-        x = self.relu(self.batchnorm3(self.conv3(x)))
-        x = self.conv4(x)
-        x = self.squeeze(x)
-        output = self.softmax(x)
-        return output
+		self.model = Model(inputdata, out)
+		return self.model

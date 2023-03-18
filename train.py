@@ -59,10 +59,10 @@ def load_model(existingModelPath = None):
 	return model
 
 def atoi(text):
-    return int(text) if text.isdigit() else text
+	return int(text) if text.isdigit() else text
 
 def natural_keys(text):
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def load_dataset(labels_path, images_path):
 	
