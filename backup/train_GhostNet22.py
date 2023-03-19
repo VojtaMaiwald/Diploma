@@ -62,7 +62,7 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = GhostNet(num_classes = 8, input_shape = IMAGE_SHAPE, pretrained = False)
+			model = GhostNet(classes = 8, input_shape = IMAGE_SHAPE)
 			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
 	return model

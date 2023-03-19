@@ -9,7 +9,7 @@ from architectures.GhostNet import GhostNet
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
@@ -33,9 +33,9 @@ EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -62,8 +62,8 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = GhostNet(num_classes = 8, input_shape = IMAGE_SHAPE, pretrained = False)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model = GhostNet(classes = 8, input_shape = IMAGE_SHAPE)
+			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
 	return model
 

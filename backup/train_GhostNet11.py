@@ -33,7 +33,7 @@ EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
 MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
@@ -62,7 +62,7 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = GhostNet(num_classes = 8, input_shape = IMAGE_SHAPE, pretrained = False)
+			model = GhostNet(classes = 8, input_shape = IMAGE_SHAPE)
 			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
 	return model
