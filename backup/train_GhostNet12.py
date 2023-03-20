@@ -28,13 +28,13 @@ TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 4 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.001
-ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
+LEARNING_RATE = 0.0001
+ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
 MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():

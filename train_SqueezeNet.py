@@ -23,21 +23,21 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
-MODEL_PATH = ".\\nets\\SqueezeNet\\"
-#TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images10000\\"
-TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
-TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
-TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
-BATCH_SIZE = 4 # BATCH_SIZE * strategy.num_replicas_in_sync
-EPOCHS = 1
+MODEL_PATH = "./nets/SqueezeNet/"
+TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
+TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
+TEST_IMAGES_PATH = "/sp1/val_set/images/"
+TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
+
+BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+EPOCHS = 25
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.0001
 COMPRESSION = 1.0
-ENDING_STRING = ("_AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
+ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
 MODEL_NAME = f"SqueezeNet_E{EPOCHS}_B{BATCH_SIZE // 3}_COMPR{COMPRESSION}_D{DROPOUT}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
@@ -54,17 +54,17 @@ def init():
 			print(e)
 
 	#strategy = tf.distribute.MultiWorkerMirroredStrategy()
-	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
+	strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.HierarchicalCopyAllReduce())
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.NcclAllReduce())
 	#strategy = tf.distribute.MirroredStrategy(cross_device_ops = tf.distribute.ReductionToOneDevice())
-	#return strategy
+	return strategy
 
-#def load_model(strategy, existingModelPath = None):
-def load_model(existingModelPath = None):
+def load_model(strategy, existingModelPath = None):
+#def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		#with strategy.scope():
+		with strategy.scope():
 			model = SqueezeNet_11(input_shape = IMAGE_SHAPE, nb_classes = 8, dropout_rate = DROPOUT, compression = COMPRESSION)
 			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
@@ -92,10 +92,10 @@ def load_dataset(labels_path, images_path):
 	return sequence, len(images_paths_list), weights
 
 if __name__ == "__main__":
-	#strategy = init()
-	init()
-	#model = load_model(strategy)
-	model = load_model()
+	strategy = init()
+	#init()
+	model = load_model(strategy)
+	#model = load_model()
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count, train_weights = load_dataset(TRAIN_LABELS_PATH, TRAIN_IMAGES_PATH)
 	test_sequence, test_labels_count, test_weights = load_dataset(TEST_LABELS_PATH, TEST_IMAGES_PATH)

@@ -9,9 +9,8 @@ EfficientNetV2B0				from keras.applications import EfficientNetV2B0
 EfficientNetV2B1				from keras.applications import EfficientNetV2B1
 EfficientNetV2B2				from keras.applications import EfficientNetV2B2
 NASNetMobile					external file
-MNasNet
+MNasNet					        external file
 DenseNet-121					from keras.applications import DenseNet121
-ResNet-18						external file
 SqueezeNet						external file
 SpaghettiNet
 ShuffleNet						external file
@@ -24,6 +23,7 @@ ESPNetV2
 DiCENet
 ChamNet
 MixNet
+AmoebaNet
 
 https://www.tensorflow.org/lite/api_docs/python/tflite_model_maker/image_classifier
 TFlite image classification models:

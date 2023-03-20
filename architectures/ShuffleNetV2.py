@@ -1,152 +1,147 @@
-import tensorflow as tf
+# https://github.com/opconty/keras-shufflenetV2
 
-def shuffle_unit(x, groups):
-    with tf.variable_scope('shuffle_unit'):
-        n, h, w, c = x.get_shape().as_list()
-        x = tf.reshape(x, shape=tf.convert_to_tensor([tf.shape(x)[0], h, w, groups, c // groups]))
-        x = tf.transpose(x, tf.convert_to_tensor([0, 1, 2, 4, 3]))
-        x = tf.reshape(x, shape=tf.convert_to_tensor([tf.shape(x)[0], h, w, c]))
+import numpy as np
+from keras_applications.imagenet_utils import _obtain_input_shape
+from keras.utils.layer_utils import get_source_inputs
+from keras.layers import Input, Conv2D, MaxPool2D, GlobalMaxPooling2D, GlobalAveragePooling2D, Activation, Dense, BatchNormalization, Lambda, DepthwiseConv2D, Concatenate
+from keras.models import Model
+import keras.backend as K
+
+def channel_split(x, name=''):
+    # equipartition
+    in_channles = x.shape.as_list()[-1]
+    ip = in_channles // 2
+    c_hat = Lambda(lambda z: z[:, :, :, 0:ip], name='%s/sp%d_slice' % (name, 0))(x)
+    c = Lambda(lambda z: z[:, :, :, ip:], name='%s/sp%d_slice' % (name, 1))(x)
+    return c_hat, c
+
+def channel_shuffle(x):
+    height, width, channels = x.shape.as_list()[1:]
+    channels_per_split = channels // 2
+    x = K.reshape(x, [-1, height, width, 2, channels_per_split])
+    x = K.permute_dimensions(x, (0,1,2,4,3))
+    x = K.reshape(x, [-1, height, width, channels])
     return x
 
 
-def conv_bn_relu(x, out_channel, kernel_size, stride=1, dilation=1):
-    with tf.variable_scope(None, 'conv_bn_relu'):
-        x = slim.conv2d(x, out_channel, kernel_size, stride, rate=dilation,
-                        biases_initializer=None, activation_fn=None)
-        x = slim.batch_norm(x, activation_fn=tf.nn.relu, fused=False)
+def shuffle_unit(inputs, out_channels, bottleneck_ratio,strides=2,stage=1,block=1):
+    if K.image_data_format() == 'channels_last':
+        bn_axis = -1
+    else:
+        raise ValueError('Only channels last supported')
+
+    prefix = 'stage{}/block{}'.format(stage, block)
+    bottleneck_channels = int(out_channels * bottleneck_ratio)
+    if strides < 2:
+        c_hat, c = channel_split(inputs, '{}/spl'.format(prefix))
+        inputs = c
+
+    x = Conv2D(bottleneck_channels, kernel_size=(1,1), strides=1, padding='same', name='{}/1x1conv_1'.format(prefix))(inputs)
+    x = BatchNormalization(axis=bn_axis, name='{}/bn_1x1conv_1'.format(prefix))(x)
+    x = Activation('relu', name='{}/relu_1x1conv_1'.format(prefix))(x)
+    x = DepthwiseConv2D(kernel_size=3, strides=strides, padding='same', name='{}/3x3dwconv'.format(prefix))(x)
+    x = BatchNormalization(axis=bn_axis, name='{}/bn_3x3dwconv'.format(prefix))(x)
+    x = Conv2D(bottleneck_channels, kernel_size=1,strides=1,padding='same', name='{}/1x1conv_2'.format(prefix))(x)
+    x = BatchNormalization(axis=bn_axis, name='{}/bn_1x1conv_2'.format(prefix))(x)
+    x = Activation('relu', name='{}/relu_1x1conv_2'.format(prefix))(x)
+
+    if strides < 2:
+        ret = Concatenate(axis=bn_axis, name='{}/concat_1'.format(prefix))([x, c_hat])
+    else:
+        s2 = DepthwiseConv2D(kernel_size=3, strides=2, padding='same', name='{}/3x3dwconv_2'.format(prefix))(inputs)
+        s2 = BatchNormalization(axis=bn_axis, name='{}/bn_3x3dwconv_2'.format(prefix))(s2)
+        s2 = Conv2D(bottleneck_channels, kernel_size=1,strides=1,padding='same', name='{}/1x1_conv_3'.format(prefix))(s2)
+        s2 = BatchNormalization(axis=bn_axis, name='{}/bn_1x1conv_3'.format(prefix))(s2)
+        s2 = Activation('relu', name='{}/relu_1x1conv_3'.format(prefix))(s2)
+        ret = Concatenate(axis=bn_axis, name='{}/concat_2'.format(prefix))([x, s2])
+
+    ret = Lambda(channel_shuffle, name='{}/channel_shuffle'.format(prefix))(ret)
+
+    return ret
+
+
+def block(x, channel_map, bottleneck_ratio, repeat=1, stage=1):
+    x = shuffle_unit(x, out_channels=channel_map[stage-1],
+                      strides=2,bottleneck_ratio=bottleneck_ratio,stage=stage,block=1)
+
+    for i in range(1, repeat+1):
+        x = shuffle_unit(x, out_channels=channel_map[stage-1],strides=1,
+                          bottleneck_ratio=bottleneck_ratio,stage=stage, block=(1+i))
+
     return x
 
+def ShuffleNetV2(include_top=True,
+                 input_tensor=None,
+                 scale_factor=1.0,
+                 pooling='max',
+                 input_shape=(224,224,3),
+                 load_model=None,
+                 num_shuffle_units=[3,7,3],
+                 bottleneck_ratio=1,
+                 classes=1000):
+    if K.backend() != 'tensorflow':
+        raise RuntimeError('Only tensorflow supported for now')
+    name = 'ShuffleNetV2_{}_{}_{}'.format(scale_factor, bottleneck_ratio, "".join([str(x) for x in num_shuffle_units]))
+    input_shape = _obtain_input_shape(input_shape, default_size=224, min_size=28, require_flatten=include_top,
+                                      data_format=K.image_data_format())
+    out_dim_stage_two = {0.5:48, 1:116, 1.5:176, 2:244}
 
-def conv_bn(x, out_channel, kernel_size, stride=1, dilation=1):
-    with tf.variable_scope(None, 'conv_bn'):
-        x = slim.conv2d(x, out_channel, kernel_size, stride, rate=dilation,
-                        biases_initializer=None, activation_fn=None)
-        x = slim.batch_norm(x, activation_fn=None, fused=False)
-    return x
+    if pooling not in ['max', 'avg']:
+        raise ValueError('Invalid value for pooling')
+    if not (float(scale_factor)*4).is_integer():
+        raise ValueError('Invalid value for scale_factor, should be x over 4')
+    exp = np.insert(np.arange(len(num_shuffle_units), dtype=np.float32), 0, 0)  # [0., 0., 1., 2.]
+    out_channels_in_stage = 2**exp
+    out_channels_in_stage *= out_dim_stage_two[bottleneck_ratio]  #  calculate output channels for each stage
+    out_channels_in_stage[0] = 24  # first stage has always 24 output channels
+    out_channels_in_stage *= scale_factor
+    out_channels_in_stage = out_channels_in_stage.astype(int)
 
-
-def depthwise_conv_bn(x, kernel_size, stride=1, dilation=1):
-    with tf.variable_scope(None, 'depthwise_conv_bn'):
-        x = slim.separable_conv2d(x, None, kernel_size, depth_multiplier=1, stride=stride,
-                                  rate=dilation, activation_fn=None, biases_initializer=None)
-        x = slim.batch_norm(x, activation_fn=None, fused=False)
-    return x
-
-
-def resolve_shape(x):
-    with tf.variable_scope(None, 'resolve_shape'):
-        n, h, w, c = x.get_shape().as_list()
-        if h is None or w is None:
-            kernel_size = tf.convert_to_tensor([tf.shape(x)[1], tf.shape(x)[2]])
+    if input_tensor is None:
+        img_input = Input(shape=input_shape)
+    else:
+        if not K.is_keras_tensor(input_tensor):
+            img_input = Input(tensor=input_tensor, shape=input_shape)
         else:
-            kernel_size = [h, w]
-    return kernel_size
+            img_input = input_tensor
 
+    # create shufflenet architecture
+    x = Conv2D(filters=out_channels_in_stage[0], kernel_size=(3, 3), padding='same', use_bias=False, strides=(2, 2),
+               activation='relu', name='conv1')(img_input)
+    x = MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding='same', name='maxpool1')(x)
 
-def global_avg_pool2D(x):
-    with tf.variable_scope(None, 'global_pool2D'):
-        kernel_size = resolve_shape(x)
-        x = slim.avg_pool2d(x, kernel_size, stride=1)
-        x.set_shape([None, 1, 1, None])
-    return x
+    # create stages containing shufflenet units beginning at stage 2
+    for stage in range(len(num_shuffle_units)):
+        repeat = num_shuffle_units[stage]
+        x = block(x, out_channels_in_stage,
+                   repeat=repeat,
+                   bottleneck_ratio=bottleneck_ratio,
+                   stage=stage + 2)
 
+    if bottleneck_ratio < 2:
+        k = 1024
+    else:
+        k = 2048
+    x = Conv2D(k, kernel_size=1, padding='same', strides=1, name='1x1conv5_out', activation='relu')(x)
 
-def se_unit(x, bottleneck=2):
-    with tf.variable_scope(None, 'SE_module'):
-        n, h, w, c = x.get_shape().as_list()
+    if pooling == 'avg':
+        x = GlobalAveragePooling2D(name='global_avg_pool')(x)
+    elif pooling == 'max':
+        x = GlobalMaxPooling2D(name='global_max_pool')(x)
 
-        kernel_size = resolve_shape(x)
-        x_pool = slim.avg_pool2d(x, kernel_size, stride=1)
-        x_pool = tf.reshape(x_pool, shape=[-1, c])
-        fc = slim.fully_connected(x_pool, bottleneck, activation_fn=tf.nn.relu,
-                                  biases_initializer=None)
-        fc = slim.fully_connected(fc, c, activation_fn=tf.nn.sigmoid,
-                                  biases_initializer=None)
-        if n is None:
-            channel_w = tf.reshape(fc, shape=tf.convert_to_tensor([tf.shape(x)[0], 1, 1, c]))
-        else:
-            channel_w = tf.reshape(fc, shape=[n, 1, 1, c])
+    if include_top:
+        x = Dense(classes, name='fc')(x)
+        x = Activation('softmax', name='softmax')(x)
 
-        x = tf.multiply(x, channel_w)
-    return x
+    if input_tensor:
+        inputs = get_source_inputs(input_tensor)
 
+    else:
+        inputs = img_input
 
-def shufflenet_v2_block(x, out_channel, kernel_size, stride=1, dilation=1, shuffle_group=2):
-    with tf.variable_scope(None, 'shuffle_v2_block'):
-        if stride == 1:
-            top, bottom = tf.split(x, num_or_size_splits=2, axis=3)
+    model = Model(inputs, x, name=name)
 
-            half_channel = out_channel // 2
+    if load_model:
+        model.load_weights('', by_name=True)
 
-            top = conv_bn_relu(top, half_channel, 1)
-            top = depthwise_conv_bn(top, kernel_size, stride, dilation)
-            top = conv_bn_relu(top, half_channel, 1)
-
-            out = tf.concat([top, bottom], axis=3)
-            out = shuffle_unit(out, shuffle_group)
-
-        else:
-            half_channel = out_channel // 2
-            b0 = conv_bn_relu(x, half_channel, 1)
-            b0 = depthwise_conv_bn(b0, kernel_size, stride, dilation)
-            b0 = conv_bn_relu(b0, half_channel, 1)
-
-            b1 = depthwise_conv_bn(x, kernel_size, stride, dilation)
-            b1 = conv_bn_relu(b1, half_channel, 1)
-
-            out = tf.concat([b0, b1], axis=3)
-            out = shuffle_unit(out, shuffle_group)
-        return out
-
-class ShuffleNetV2():
-
-    first_conv_channel = 24
-
-    def __init__(self, input_holder, cls, model_scale=1.0, shuffle_group=2, is_training=True):
-        self.input = input_holder
-        self.output = None
-        self.cls = cls
-        self.shuffle_group = shuffle_group
-        self.channel_sizes = self._select_channel_size(model_scale)
-
-        with slim.arg_scope([slim.batch_norm], is_training=is_training):
-            self._build_model()
-
-    def _select_channel_size(self, model_scale):
-        # [(out_channel, repeat_times), (out_channel, repeat_times), ...]
-        if model_scale == 0.5:
-            return [(48, 4), (96, 8), (192, 4), (1024, 1)]
-        elif model_scale == 1.0:
-            return [(116, 4), (232, 8), (464, 4), (1024, 1)]
-        elif model_scale == 1.5:
-            return [(176, 4), (352, 8), (704, 4), (1024, 1)]
-        elif model_scale == 2.0:
-            return [(244, 4), (488, 8), (976, 4), (2048, 1)]
-        else:
-            raise ValueError('Unsupported model size.')
-
-    def _build_model(self):
-        with tf.variable_scope('init_block'):
-            out = conv_bn_relu(self.input, self.first_conv_channel, 3, 2)
-            out = slim.max_pool2d(out, 3, 2, padding='SAME')
-
-        for idx, block in enumerate(self.channel_sizes[:-1]):
-            with tf.variable_scope('shuffle_block_{}'.format(idx)):
-                out_channel, repeat = block
-
-                # First block is downsampling
-                out = shufflenet_v2_block(out, out_channel, 3, 2, shuffle_group=self.shuffle_group)
-
-                # Rest blocks
-                for i in range(repeat-1):
-                    out = shufflenet_v2_block(out, out_channel, 3, shuffle_group=self.shuffle_group)
-
-        with tf.variable_scope('end_block'):
-            out = conv_bn_relu(out, self.channel_sizes[-1][0], 1)
-
-        with tf.variable_scope('prediction'):
-            out = global_avg_pool2D(out)
-            out = slim.conv2d(out, self.cls, 1, activation_fn=None, biases_initializer=None)
-            out = tf.reshape(out, shape=[-1, self.cls])
-            out = tf.identity(out, name='cls_prediction')
-            self.output = out
+    return model

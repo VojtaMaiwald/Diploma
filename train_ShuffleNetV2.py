@@ -5,11 +5,11 @@ import numpy as np
 import glob
 import tensorflow as tf
 from keras import backend as K
-from architectures.GhostNet import GhostNet
+from architectures.ShuffleNetV2 import ShuffleNetV2
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam, SGD
+from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
@@ -23,19 +23,22 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
-MODEL_PATH = "./nets/GhostNet/"
+MODEL_PATH = "./nets/ShuffleNetV2/"
 TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
-BATCH_SIZE = 4 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+
+BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.0001
+SCALE_FACTOR = 1.0
+BOTTLENECK = 1
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"ShuffleNetV2_E{EPOCHS}_B{BATCH_SIZE // 3}_SC{SCALE_FACTOR}_BOTTLENECK{BOTTLENECK}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -62,8 +65,8 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = GhostNet(classes = 8, input_shape = IMAGE_SHAPE)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model = ShuffleNetV2(classes = 8, input_shape = IMAGE_SHAPE, scale_factor = SCALE_FACTOR, bottleneck_ratio = BOTTLENECK)
+			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
 
 	return model
 

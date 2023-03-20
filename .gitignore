@@ -10,5 +10,4 @@ nets/*
 !nets/GhostNet/
 !nets/ShuffleNet/
 !nets/ShuffleNetV2/
-!nets/ResNet18/
-!nets/ResNet34/
+!nets/MnasNet/
