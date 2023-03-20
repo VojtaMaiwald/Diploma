@@ -4,7 +4,43 @@ import cv2 as cv
 import glob
 import re
 
-MODEL_PATH = ".\\nets_tflite\\EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"
+MODELS = [
+	#'EfficientNetB0_E25_B16_AUGFULL_SHUFFLE_float16.tflite',
+	#'EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite',
+	#'EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_lr_00001_float16.tflite',
+	#'EfficientNetB0_E25_B8_AUGFULL_SHUFFLE_float16.tflite',
+	#"EfficientNetB0_E25_B4_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite"
+#
+	#'MobileNetV2_E25_B16_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV2_E25_B32_D_0.2_AUGFULL_float16.tflite',
+	#'MobileNetV2_E25_B32_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV2_E25_B32_D_0.2_AUG_float16.tflite',
+	#'MobileNetV2_E25_B32_D_0.2_NOAUG_float16.tflite',
+	#'MobileNetV2_E25_B8_D_0.2_AUGFULL_float16.tflite',
+#
+	'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+#
+	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Small_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Small_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Small_E25_B32_A_1.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Small_E30_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+]
+
+MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"
+MODEL_PATH = f".\\nets_tflite\\{MODEL_NAME}"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
@@ -85,7 +121,7 @@ def testValDataset():
 	errors = 0
 
 	# Load TFLite model and allocate tensors.
-	interpreter = tf.lite.Interpreter(model_path = MODEL_PATH)
+	interpreter = tf.lite.Interpreter(model_path = MODEL_PATH, num_threads = 8)
 	interpreter.allocate_tensors()
 
 	# Get input and output tensors.
@@ -112,6 +148,10 @@ def testValDataset():
 	print(f"\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %")
 	print(f"\nConfusion matrix:\n {tf.math.confusion_matrix(labels, predictions)}")
 
+	f = open(".\\nets_tflite\\stats_classifier.txt", "a")
+	f.write(f"{MODEL_NAME}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}\n\n")
+	f.close()
+
 def atoi(text):
 	return int(text) if text.isdigit() else text
 
@@ -119,9 +159,13 @@ def natural_keys(text):
 	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 if __name__ == '__main__':
+
 	if TEST_ONE_IMG:
 		testOneImage()
 	elif WEBCAM:
 		webcamTest()
 	else:
-		testValDataset()
+		for i in MODELS:
+			MODEL_NAME = i
+			MODEL_PATH = f".\\nets_tflite\\{MODEL_NAME}"
+			testValDataset()
