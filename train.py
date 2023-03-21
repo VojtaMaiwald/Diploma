@@ -23,10 +23,22 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
 MODEL_PATH = ".\\nets\\MobileNetV2\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\images2000\\"
+#TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
+TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images2000\\"
 TRAIN_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_exp.npy"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
+
+"""
+
+MODEL_PATH = "./nets/MobileNetV2/"
+TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
+TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
+TEST_IMAGES_PATH = "/sp1/val_set/images/"
+TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
+
+"""
+
 BATCH_SIZE = 14
 EPOCHS = 1
 DONE_EPOCHS = 20

@@ -23,7 +23,7 @@ ESPNetV2
 DiCENet
 ChamNet
 MixNet
-AmoebaNet
+AmoebaNet                       only Pytorch implementation
 
 https://www.tensorflow.org/lite/api_docs/python/tflite_model_maker/image_classifier
 TFlite image classification models:

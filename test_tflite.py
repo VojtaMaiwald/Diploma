@@ -18,18 +18,18 @@ MODELS = [
 	#'MobileNetV2_E25_B32_D_0.2_NOAUG_float16.tflite',
 	#'MobileNetV2_E25_B8_D_0.2_AUGFULL_float16.tflite',
 #
-	'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
+	#'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
 #
 	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
 	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
@@ -37,6 +37,16 @@ MODELS = [
 	#'MobileNetV3Small_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
 	#'MobileNetV3Small_E25_B32_A_1.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
 	#'MobileNetV3Small_E30_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
+
+	'MobileNetV2_AroVal_B16_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV2_AroVal_B32_E25_D0.2_Adam_0.0001_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV2_AroVal_B32_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV2_AroVal_B8_E25_D0.2_Adam_0.00003_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV2_AroVal_B8_E25_D0.2_SGD_lr_0.01_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV2_AroVal_B8_E25_D0.5_Adam_0.01_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV3Large_AroVal_E25_B16_D0.2_SDG0.01_AUGFULL_SHUFFLE_MINI_float16.tflite', 
+	'MobileNetV3Large_AroVal_E25_B16_D0.5_SDG0.01_AUGFULL_SHUFFLE_float16.tflite', 
+	'MobileNetV3Large_AroVal_E25_B32_D0.2_SDG0.01_AUGFULL_SHUFFLE_float16.tflite'
 ]
 
 MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"
@@ -44,9 +54,12 @@ MODEL_PATH = f".\\nets_tflite\\{MODEL_NAME}"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
+TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
+TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
 
 TEST_ONE_IMG = False
 WEBCAM = False
+REGRESSION = True
 
 def testOneImage():
 	# Load TFLite model and allocate tensors.
@@ -128,6 +141,8 @@ def testValDataset():
 	input_details = interpreter.get_input_details()
 	output_details = interpreter.get_output_details()
 
+	print(MODEL_NAME)
+
 	for i in range(len(images_paths_list)):
 		img_path = images_paths_list[i]
 		img = cv.imread(img_path, 1)
@@ -152,6 +167,50 @@ def testValDataset():
 	f.write(f"{MODEL_NAME}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}\n\n")
 	f.close()
 
+def testValDatasetRegression():
+	labels_aro = np.load(TEST_ARO_LABELS_PATH)
+	labels_val = np.load(TEST_VAL_LABELS_PATH)
+	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
+	images_paths_list.sort(key = natural_keys)
+	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
+	RMSE_avg_aro = 0
+	RMSE_avg_val = 0
+
+	# Load TFLite model and allocate tensors.
+	interpreter = tf.lite.Interpreter(model_path = MODEL_PATH, num_threads = 8)
+	interpreter.allocate_tensors()
+
+	# Get input and output tensors.
+	input_details = interpreter.get_input_details()
+	output_details = interpreter.get_output_details()
+	
+	print(MODEL_NAME)
+
+	for i in range(len(images_paths_list)):
+		img_path = images_paths_list[i]
+		img = cv.imread(img_path, 1)
+		img = img.reshape(1, 224, 224, 3)
+		img = np.array(img, dtype = np.float32)
+
+		interpreter.set_tensor(input_details[0]['index'], img)
+		interpreter.invoke()
+		aro_pred, val_pred = interpreter.get_tensor(output_details[0]["index"])[0]
+		aro_label, val_label = labels[i]
+		RMSE_avg_aro += (aro_pred - aro_label) ** 2
+		RMSE_avg_val += (val_pred - val_label) ** 2
+
+		print(f"{i} / {len(images_paths_list)}\t\tArousal avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_aro)):.4f}\t\tValence avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_val)):.4f}        ", end = "\r")
+
+	RMSE_avg_aro = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_aro)
+	RMSE_avg_val = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_val)
+
+	print("\n")
+	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.4f}\nValence average RMSE: {RMSE_avg_val:.4f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.4f}")
+	f = open(".\\nets_tflite\\stats_regressor.txt", "a")
+	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.8f}\nValence average RMSE: {RMSE_avg_val:.8f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.8f}")
+	f.write("\n\n")
+	f.close()
+
 def atoi(text):
 	return int(text) if text.isdigit() else text
 
@@ -164,6 +223,11 @@ if __name__ == '__main__':
 		testOneImage()
 	elif WEBCAM:
 		webcamTest()
+	elif REGRESSION:
+		for i in MODELS:
+			MODEL_NAME = i
+			MODEL_PATH = f".\\nets_tflite\\{MODEL_NAME}"
+			testValDatasetRegression()
 	else:
 		for i in MODELS:
 			MODEL_NAME = i

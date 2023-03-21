@@ -1,0 +1,54 @@
+MobileNetV2_AroVal_B16_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37323127
+Valence average RMSE: 0.42588618
+Average total RMSE: 0.39955872
+
+MobileNetV2_AroVal_B32_E25_D0.2_Adam_0.0001_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.36388479
+Valence average RMSE: 0.44422661
+Average total RMSE: 0.40405570
+
+MobileNetV2_AroVal_B32_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.38371447
+Valence average RMSE: 0.42304765
+Average total RMSE: 0.40338106
+
+MobileNetV2_AroVal_B8_E25_D0.2_Adam_0.00003_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37552459
+Valence average RMSE: 0.43900694
+Average total RMSE: 0.40726576
+
+MobileNetV2_AroVal_B8_E25_D0.2_SGD_lr_0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.39279763
+Valence average RMSE: 0.43028697
+Average total RMSE: 0.41154230
+
+MobileNetV2_AroVal_B8_E25_D0.5_Adam_0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.35913614
+Valence average RMSE: 0.43825150
+Average total RMSE: 0.39869382
+
+MobileNetV3Large_AroVal_E25_B16_D0.2_SDG0.01_AUGFULL_SHUFFLE_MINI_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37056216
+Valence average RMSE: 0.42622255
+Average total RMSE: 0.39839236
+
+MobileNetV3Large_AroVal_E25_B16_D0.5_SDG0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37438801
+Valence average RMSE: 0.42469841
+Average total RMSE: 0.39954321
+
+MobileNetV3Large_AroVal_E25_B32_D0.2_SDG0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.38655118
+Valence average RMSE: 0.46051002
+Average total RMSE: 0.42353060
+

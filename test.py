@@ -5,12 +5,17 @@ import glob
 import os
 import re
 
-WEBCAM = False
-ONE_IMG_TEST = False
-MODEL_PATH = ".\\nets\\NASNetMobile\\NASNetMobile_E25_B8_AUGFULL_SHUFFLE"
+MODEL_NAME = "MobileNetV2_AroVal_B32_E25_D0.2_Adam_0.0001_AUGFULL_SHUFFLE"
+MODEL_PATH = f".\\nets\\MobileNetV2\\{MODEL_NAME}"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
+TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
+TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
+
+WEBCAM = False
+ONE_IMG_TEST = False
+REGRESSION = True
 
 def webcam(model):
 	cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -67,6 +72,43 @@ def testValDataset(model):
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
 	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 
+def testValDatasetRegression(model):
+	labels_aro = np.load(TEST_ARO_LABELS_PATH)
+	labels_val = np.load(TEST_VAL_LABELS_PATH)
+	images_paths_list = glob.glob(TEST_IMAGES_PATH + "*.jpg")
+	images_paths_list.sort(key = natural_keys)
+	labels = [[labels_aro[i], labels_val[i]] for i in range(len(images_paths_list))]
+	RMSE_avg_aro = 0
+	RMSE_avg_val = 0
+	file_string = ""
+
+	for i in range(len(images_paths_list)):
+		img_path = images_paths_list[i]
+		img = cv.imread(img_path, 1)
+		img = img.reshape(1, 224, 224, 3)
+
+		aro_pred, val_pred = model.predict(img, verbose = 0)[0]
+		aro_label, val_label = labels[i]
+		RMSE_avg_aro += (aro_pred - aro_label) ** 2
+		RMSE_avg_val += (val_pred - val_label) ** 2
+
+		file_string += f"\n{aro_label:.8f}\t{aro_pred:.8f}\t{val_label:.8f}\t{val_pred:.8f}"
+
+		print(f"{i} / {len(images_paths_list)}\t\tArousal avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_aro)):.4f}\t\tValence avg RMSE: {(np.sqrt((1 / (i + 1)) * RMSE_avg_val)):.4f}        ", end = "\r")
+
+	RMSE_avg_aro = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_aro)
+	RMSE_avg_val = np.sqrt((1 / len(images_paths_list)) * RMSE_avg_val)
+	
+	print("\n")
+
+	f = open(MODEL_PATH + "\\stats2.txt", "w")
+	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.4f}\nValence average RMSE: {RMSE_avg_val:.4f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.4f}")
+	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nArousal average RMSE: {RMSE_avg_aro:.8f}\nValence average RMSE: {RMSE_avg_val:.8f}\nAverage total RMSE: {((RMSE_avg_aro + RMSE_avg_val) / 2):.8f}")
+	f.write("\n\n")
+	f.write("GT_aro\tpred_aro\tGT_val\tpred_val")
+	f.write(file_string)
+	f.close()
+
 def atoi(text):
 	return int(text) if text.isdigit() else text
 
@@ -94,6 +136,10 @@ if __name__ == '__main__':
 		init()
 		model = tf.keras.models.load_model(MODEL_PATH)
 		testOneImage(model)
+	elif REGRESSION:
+		init()
+		model = tf.keras.models.load_model(MODEL_PATH)
+		testValDatasetRegression(model)
 	else:
 		init()
 		model = tf.keras.models.load_model(MODEL_PATH)

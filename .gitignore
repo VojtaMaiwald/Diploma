@@ -11,3 +11,4 @@ nets/*
 !nets/ShuffleNet/
 !nets/ShuffleNetV2/
 !nets/MnasNet/
+!nets/DenseNet/
