@@ -26,6 +26,7 @@ MixNet
 AmoebaNet                       only Pytorch implementation
 
 https://www.tensorflow.org/lite/api_docs/python/tflite_model_maker/image_classifier
+https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet/lite
 TFlite image classification models:
 EfficientNet-Lite0
 EfficientNet-Lite1
