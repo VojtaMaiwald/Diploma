@@ -34,8 +34,9 @@ IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.01
+MOMENTUM = 0.9
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"EfficientNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"EfficientNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_MOMENTUM{MOMENTUM}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -63,7 +64,7 @@ def load_model(strategy, existingModelPath = None):
 	else:
 		with strategy.scope():
 			model = EfficientNetB0(classes = 8, weights = None)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE, momentum = MOMENTUM), metrics = ['accuracy'])
 
 	return model
 

@@ -5,7 +5,7 @@ import numpy as np
 import glob
 import tensorflow as tf
 from keras import backend as K
-from keras.applications import EfficientNetB0
+from architectures.GhostNet import GhostNet
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
@@ -23,7 +23,7 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
-MODEL_PATH = "./nets/EfficientNet/"
+MODEL_PATH = "./nets/GhostNet/"
 TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
 TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
@@ -35,7 +35,7 @@ AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.01
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"EfficientNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"GhostNet_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -62,8 +62,8 @@ def load_model(strategy, existingModelPath = None):
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
 		with strategy.scope():
-			model = EfficientNetB0(classes = 8, weights = None)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model = GhostNet(classes = 8, input_shape = IMAGE_SHAPE)
+			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE, momentum = 0.9), metrics = ['accuracy'])
 
 	return model
 
@@ -155,8 +155,8 @@ if __name__ == "__main__":
 
 	print("\n")
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	
-	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	f.close()
 	print(" ***** STATS SAVED ***** ")
