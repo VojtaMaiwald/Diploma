@@ -35,7 +35,7 @@ AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.001
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"EfficientNet_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"EfficientNetB0_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -155,8 +155,8 @@ if __name__ == "__main__":
 
 	print("\n")
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
-	print(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	
-	f.write(f"{MODEL_PATH}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
 	f.close()
 	print(" ***** STATS SAVED ***** ")

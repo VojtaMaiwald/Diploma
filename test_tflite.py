@@ -64,6 +64,10 @@ TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_l
 TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
 TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
 
+
+#TEST_IMAGES_PATH = "/sp1/val_set/images/"
+#TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
+
 TEST_ONE_IMG = False
 WEBCAM = False
 REGRESSION = False
@@ -171,6 +175,7 @@ def testValDataset():
 	print(f"\nConfusion matrix:\n {tf.math.confusion_matrix(labels, predictions)}")
 
 	f = open(".\\nets_tflite\\stats_classifier.txt", "a")
+	#f = open("./nets_tflite/stats_classifier.txt", "a")
 	f.write(f"{MODEL_NAME}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}\n\n")
 	f.close()
 
@@ -239,4 +244,5 @@ if __name__ == '__main__':
 		for i in MODELS:
 			MODEL_NAME = i
 			MODEL_PATH = f".\\nets_tflite\\{MODEL_NAME}"
+			#MODEL_PATH = f"./nets_tflite/{MODEL_NAME}"
 			testValDataset()
