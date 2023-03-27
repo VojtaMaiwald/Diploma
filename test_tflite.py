@@ -52,8 +52,16 @@ MODELS = [
 	#'NASNetMobile_E25_B16_float16.tflite',
 	#'NASNetMobile_E25_B32_AUGFULL_SHUFFLE_float16.tflite',
 	#'NASNetMobile_E25_B32_float16.tflite',
-	'NASNetMobile_E25_B8_AUGFULL_SHUFFLE_float16.tflite',
-	'NASNetMobile_E25_B8_float16.tflite',
+	#'NASNetMobile_E25_B8_AUGFULL_SHUFFLE_float16.tflite',
+	#'NASNetMobile_E25_B8_float16.tflite',
+
+	#'ShuffleNet_E25_B8_Channels200_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'ShuffleNet_E25_B8_Channels400_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'ShuffleNetV2_E25_B8_SC1.0_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'EfficientNetB0_E25_B8_SGD0.01_AUGFULL_SHUFFLE_float16.tflite',
+	#'GhostNet_E25_B16_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'MnasNet_E25_B8_A1.0_DEPTH1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'ShuffleNetV2_E25_B8_SC0.5_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
 ]
 
 MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"

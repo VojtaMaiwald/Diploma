@@ -3,7 +3,7 @@ import glob
 import numpy as np
 
 
-for name in glob.glob(".\\nets\\EfficientNetB0\\*SGD*"):
+for name in glob.glob(".\\nets\\ShuffleNetV2\\ShuffleNetV2_E25_B8_SC0.5_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE"):
 
 	#IMPORT_MODEL_PATH = ".\\nets\\EfficientNetB0\\"
 	#IMPORT_MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE"
