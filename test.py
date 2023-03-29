@@ -5,8 +5,8 @@ import glob
 import os
 import re
 
-MODEL_NAME = "DenseNet121_E25_B8_Adam0.0001_AUGFULL_SHUFFLE_E_24_1.243_T.tf"
-MODEL_PATH = f".\\nets\\DenseNet\\{MODEL_NAME}"
+MODEL_NAME = "GhostNet_E25_B16_Adam0.0001_AUGFULL_SHUFFLE"
+MODEL_PATH = f".\\nets\\GhostNet\\{MODEL_NAME}"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}

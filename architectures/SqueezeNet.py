@@ -64,7 +64,7 @@ def SqueezeNet(input_shape, nb_classes, use_bypass=False, dropout_rate=None, com
     return Model(inputs=input_img, outputs=x)
 
 
-def SqueezeNet_11(input_shape, nb_classes, dropout_rate=None, compression=1.0):
+def SqueezeNet_11(input_shape, nb_classes=None, dropout_rate=None, compression=1.0, include_top=True):
     """
     Creating a SqueezeNet of version 1.1
     
@@ -79,6 +79,8 @@ def SqueezeNet_11(input_shape, nb_classes, dropout_rate=None, compression=1.0):
     Returns:
         Model        : Keras model instance
     """
+    if include_top and nb_classes == None:
+       raise ValueError("When top layers is included you have to specify number of classes")
     
     input_img = Input(shape=input_shape)
 
@@ -105,7 +107,8 @@ def SqueezeNet_11(input_shape, nb_classes, dropout_rate=None, compression=1.0):
         x = Dropout(dropout_rate)(x)
     
     # Creating last conv10
-    x = output(x, nb_classes)
+    if include_top:
+        x = output(x, nb_classes)
 
     return Model(inputs=input_img, outputs=x)
 

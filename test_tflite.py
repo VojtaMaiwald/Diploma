@@ -62,6 +62,12 @@ MODELS = [
 	#'GhostNet_E25_B16_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
 	#'MnasNet_E25_B8_A1.0_DEPTH1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
 	#'ShuffleNetV2_E25_B8_SC0.5_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'DenseNet121_E25_B8_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	#'EfficientNetB0_E25_B8_Adam0.001_AUGFULL_SHUFFLE_float16.tflite',
+	#'SqueezeNet_E25_B8_COMPR1.0_D0.2_Adam0.0001_AUGFULL_SHUFFLE_float16',
+
+	'EfficientNetB0_AroVal_E25_B8_SGD0.01_AUGFULL_SHUFFLE_float16.tflite',
+	'SqueezeNet_AroVal_E10_B8_COMPR1.0_D0.2_SGD0.01_AUGFULL_SHUFFLE_float16.tflite',
 ]
 
 MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"
@@ -78,7 +84,7 @@ TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\a
 
 TEST_ONE_IMG = False
 WEBCAM = False
-REGRESSION = False
+REGRESSION = True
 
 def testOneImage():
 	# Load TFLite model and allocate tensors.
