@@ -52,3 +52,15 @@ Arousal average RMSE: 0.38655118
 Valence average RMSE: 0.46051002
 Average total RMSE: 0.42353060
 
+EfficientNetB0_AroVal_E25_B8_SGD0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37445540
+Valence average RMSE: 0.41019894
+Average total RMSE: 0.39232717
+
+SqueezeNet_AroVal_E10_B8_COMPR1.0_D0.2_SGD0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.40895618
+Valence average RMSE: 0.43767775
+Average total RMSE: 0.42331696
+
