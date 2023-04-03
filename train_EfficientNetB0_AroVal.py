@@ -47,7 +47,7 @@ SHUFFLE = True
 LEARNING_RATE = 0.0001
 DROPOUT = 0.2
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"EfficientNetB0_AroVal_E{EPOCHS}_B{BATCH_SIZE}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"EfficientNetB0_AroVal_E{EPOCHS}_B{BATCH_SIZE}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -73,7 +73,7 @@ def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		 #with strategy.scope():
+		#with strategy.scope():
 			base_model = EfficientNetB0(include_top = False, weights = None, input_shape = IMAGE_SHAPE)
 			x = base_model.output
 			x = GlobalAveragePooling2D()(x)

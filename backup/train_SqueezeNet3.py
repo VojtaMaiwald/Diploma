@@ -29,9 +29,9 @@ TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 
-BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 16 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
-DROPOUT = 0.5
+DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True

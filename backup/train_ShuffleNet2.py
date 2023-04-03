@@ -35,7 +35,7 @@ IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.0001
-CHANNELS = 1000 # must be divisible by 4
+CHANNELS = 1000 # must be divisible by (4 * num of classes)
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
 MODEL_NAME = f"ShuffleNet_E{EPOCHS}_B{BATCH_SIZE // 3}_Channels{CHANNELS}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 

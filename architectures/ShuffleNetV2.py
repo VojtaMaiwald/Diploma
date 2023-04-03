@@ -124,12 +124,11 @@ def ShuffleNetV2(include_top=True,
         k = 2048
     x = Conv2D(k, kernel_size=1, padding='same', strides=1, name='1x1conv5_out', activation='relu')(x)
 
-    if pooling == 'avg':
-        x = GlobalAveragePooling2D(name='global_avg_pool')(x)
-    elif pooling == 'max':
-        x = GlobalMaxPooling2D(name='global_max_pool')(x)
-
     if include_top:
+        if pooling == 'avg':
+            x = GlobalAveragePooling2D(name='global_avg_pool')(x)
+        elif pooling == 'max':
+            x = GlobalMaxPooling2D(name='global_max_pool')(x)
         x = Dense(classes, name='fc')(x)
         x = Activation('softmax', name='softmax')(x)
 

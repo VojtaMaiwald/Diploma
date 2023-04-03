@@ -44,11 +44,11 @@ EPOCHS = 10
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 DROPOUT = 0.2
 COMPRESSION = 1.0
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"SqueezeNet_AroVal_E{EPOCHS}_B{BATCH_SIZE}_SGD{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"SqueezeNet_AroVal_E{EPOCHS}_B{BATCH_SIZE}_COMPR{COMPRESSION}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -74,7 +74,7 @@ def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		 #with strategy.scope():
+		#with strategy.scope():
 			base_model = SqueezeNet_11(input_shape = IMAGE_SHAPE, compression = COMPRESSION, include_top = False)
 			x = base_model.output
 			x = GlobalAveragePooling2D()(x)
@@ -82,7 +82,7 @@ def load_model(existingModelPath = None):
 			x = Dropout(DROPOUT)(x)
 			predictions = Dense(2, activation = 'linear')(x)
 			model = Model(inputs = base_model.input, outputs = predictions)
-			model.compile(loss = MeanSquaredError(), optimizer = SGD(learning_rate = LEARNING_RATE, momentum = 0.9), metrics = [RootMeanSquaredError()])
+			model.compile(loss = MeanSquaredError(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = [RootMeanSquaredError()])
 
 	return model
 

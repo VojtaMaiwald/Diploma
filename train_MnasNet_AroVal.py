@@ -26,9 +26,11 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #MODEL_PATH = "./nets/MnasNet/"
 #TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
-#TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
+#TRAIN_ARO_LABELS_PATH = "/sp1/train_set/all_labels_aro.npy"
+#TRAIN_VAL_LABELS_PATH = "/sp1/train_set/all_labels_val.npy"
 #TEST_IMAGES_PATH = "/sp1/val_set/images/"
-#TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
+#TEST_ARO_LABELS_PATH = "/sp1/val_set/all_labels_aro.npy"
+#TEST_VAL_LABELS_PATH = "/sp1/val_set/all_labels_val.npy"
 
 MODEL_PATH = ".\\nets\\MnasNet\\"
 TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
@@ -44,12 +46,12 @@ EPOCHS = 10
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 ALPHA = 1.0
 DEPTH = 1
 DROPOUT = 0.2
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"MnasNet_AroVal_E{EPOCHS}_B{BATCH_SIZE}_A{ALPHA}_DEPTH{DEPTH}_Adam{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"MnasNet_AroVal_E{EPOCHS}_B{BATCH_SIZE}_A{ALPHA}_DEPTH{DEPTH}_SGD{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -75,7 +77,7 @@ def load_model(existingModelPath = None):
 	if existingModelPath != None:
 		model = tf.keras.models.load_model(existingModelPath)
 	else:
-		 #with strategy.scope():
+		#with strategy.scope():
 			base_model = MnasNet(input_shape = IMAGE_SHAPE, alpha = ALPHA, depth_multiplier = DEPTH, nb_classes = 8, include_top = False)
 			x = base_model.output
 			x = GlobalAveragePooling2D()(x)
@@ -83,7 +85,7 @@ def load_model(existingModelPath = None):
 			x = Dropout(DROPOUT)(x)
 			predictions = Dense(2, activation = 'linear')(x)
 			model = Model(inputs = base_model.input, outputs = predictions)
-			model.compile(loss = MeanSquaredError(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = [RootMeanSquaredError()])
+			model.compile(loss = MeanSquaredError(), optimizer = SGD(learning_rate = LEARNING_RATE), metrics = [RootMeanSquaredError()])
 
 	return model
 
@@ -106,8 +108,9 @@ def load_dataset(aro_labels_path, val_labels_path, images_path, train = True):
 if __name__ == "__main__":
 	#strategy = init()
 	init()
-	#model = load_model(strategy)
 	model = load_model()
+	#model = load_model(strategy)
+	#model = load_model(".\\nets\\MnasNet\\MnasNet_AroVal_E10_B8_A1.0_DEPTH1_SGD0.01_AUGFULL_SHUFFLE_E_05_0.173_T.tf")
 	print(" ***** MODEL LOADED ***** ")
 	train_sequence, train_labels_count = load_dataset(TRAIN_ARO_LABELS_PATH, TRAIN_VAL_LABELS_PATH, TRAIN_IMAGES_PATH)
 	test_sequence, test_labels_count = load_dataset(TEST_ARO_LABELS_PATH, TEST_VAL_LABELS_PATH, TEST_IMAGES_PATH, False)
@@ -119,6 +122,7 @@ if __name__ == "__main__":
 		epochs = EPOCHS,
 		validation_data = test_sequence,
 		validation_steps = test_labels_count // BATCH_SIZE,
+		initial_epoch = 5,
 		callbacks = [
 			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf',
 							save_best_only = False,

@@ -1,0 +1,23 @@
+bash Miniconda3-latest-Linux-x86_64.sh                                                                
+conda create --name diplomka python=3.9
+conda activate diplomka
+conda install -c conda-forge cudatoolkit=11.8.0
+pip install nvidia-cudnn-cu11==8.6.0.163
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+CUDNN_PATH=$(dirname $(python -c "import nvidia.cudnn;print(nvidia.cudnn.__file__)"))
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/:$CUDNN_PATH/lib' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+pip install --upgrade pip
+pip install tensorflow==2.12.*
+python -c "import nvidia.cudnn;print(nvidia.cudnn.__file__)"
+conda deactivate
+conda activate diplomka
+python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+pip install opencv-contrib-python
+pip install Pillow
+pip install sklearn3
+pip install sklearn_utils
+pip install scikit-image
+pip install numpy
+pip install imgaug
+pip install keras_applications
+conda install -c nvidia cuda-nvcc=11.3.58
