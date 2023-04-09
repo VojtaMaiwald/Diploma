@@ -55,7 +55,8 @@ def shuffle_unit(inputs, out_channels, bottleneck_ratio,strides=2,stage=1,block=
         s2 = Activation('relu', name='{}/relu_1x1conv_3'.format(prefix))(s2)
         ret = Concatenate(axis=bn_axis, name='{}/concat_2'.format(prefix))([x, s2])
 
-    ret = Lambda(channel_shuffle, name='{}/channel_shuffle'.format(prefix))(ret)
+    #ret = Lambda(channel_shuffle, name='{}/channel_shuffle'.format(prefix))(ret)
+    ret = channel_shuffle(ret)
 
     return ret
 

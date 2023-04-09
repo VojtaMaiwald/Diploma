@@ -24,6 +24,14 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 #py -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
+MODEL_PATH = "./nets/SqueezeNet/"
+TRAIN_IMAGES_PATH = "/sp1/train_set/images/"
+TRAIN_ARO_LABELS_PATH = "/sp1/train_set/all_labels_aro.npy"
+TRAIN_VAL_LABELS_PATH = "/sp1/train_set/all_labels_val.npy"
+TEST_IMAGES_PATH = "/sp1/val_set/images/"
+TEST_ARO_LABELS_PATH = "/sp1/val_set/all_labels_aro.npy"
+TEST_VAL_LABELS_PATH = "/sp1/val_set/all_labels_val.npy"
+
 #MODEL_PATH = ".\\nets\\SqueezeNet\\"
 #TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
 #TRAIN_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_aro.npy"
@@ -31,14 +39,6 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 #TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 #TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
 #TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
-
-MODEL_PATH = ".\\nets\\SqueezeNet\\"
-TRAIN_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\images\\"
-TRAIN_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_aro.npy"
-TRAIN_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\train_set\\all_labels_val.npy"
-TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
-TEST_ARO_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_aro.npy"
-TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_val.npy"
 
 
 BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync

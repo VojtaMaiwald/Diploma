@@ -47,8 +47,8 @@ IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.01
-ALPHA = 1.0
-DEPTH = 1
+ALPHA = 1.5
+DEPTH = 3
 DROPOUT = 0.2
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
 MODEL_NAME = f"MnasNet_AroVal_E{EPOCHS}_B{BATCH_SIZE}_A{ALPHA}_DEPTH{DEPTH}_SGD{LEARNING_RATE}_{ENDING_STRING}"
@@ -122,7 +122,6 @@ if __name__ == "__main__":
 		epochs = EPOCHS,
 		validation_data = test_sequence,
 		validation_steps = test_labels_count // BATCH_SIZE,
-		initial_epoch = 5,
 		callbacks = [
 			ModelCheckpoint(MODEL_PATH + MODEL_NAME + '_E_{epoch:02d}_{val_loss:.3f}_T.tf',
 							save_best_only = False,

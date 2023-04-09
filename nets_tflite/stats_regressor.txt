@@ -82,3 +82,26 @@ Arousal average RMSE: 0.39205169
 Valence average RMSE: 0.43048854
 Average total RMSE: 0.41127011
 
+ShuffleNet_AroVal_E10_B8_Channels400_Adam0.001_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.37459346
+Valence average RMSE: 0.42303139
+Average total RMSE: 0.39881243
+
+ShuffleNet_AroVal_E10_B8_Channels200_Adam0.001_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.36664683
+Valence average RMSE: 0.40764250
+Average total RMSE: 0.38714466
+
+MnasNet_AroVal_E10_B8_A1.5_DEPTH3_SGD0.01_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.35450162
+Valence average RMSE: 0.41559761
+Average total RMSE: 0.38504962
+
+MnasNet_AroVal_E10_B8_A1.0_DEPTH1_Adam0.001_AUGFULL_SHUFFLE_float16.tflite
+Images: 3999
+Arousal average RMSE: 0.34185438
+Valence average RMSE: 0.41856156
+Average total RMSE: 0.38020797
