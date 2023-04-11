@@ -94,7 +94,7 @@ def _inverted_res_block(inputs, kernel, expansion, alpha, filters, block_id, str
         return layers.Add(name=prefix + 'add')([inputs, x])
     return x
     
-def MnasNet(input_shape=None, alpha=1.0, depth_multiplier=1, pooling=None, nb_classes=10):
+def MnasNet(input_shape=None, alpha=1.0, depth_multiplier=1, pooling=None, nb_classes=10, include_top=True):
     img_input = layers.Input(shape=input_shape)
     
     first_block_filters = _make_divisible(32 * alpha, 8)
@@ -125,13 +125,13 @@ def MnasNet(input_shape=None, alpha=1.0, depth_multiplier=1, pooling=None, nb_cl
     
     x = _inverted_res_block(x, kernel=3, expansion=6, stride=1, alpha=alpha, filters=320, block_id=16)
     
-    if pooling == 'avg':
-        x = layers.GlobalAveragePooling2D()(x)
-    else:
-        x = layers.GlobalMaxPooling2D()(x)
+    if include_top:
+        if pooling == 'avg':
+            x = layers.GlobalAveragePooling2D()(x)
+        else:
+            x = layers.GlobalMaxPooling2D()(x)            
+        x = layers.Dense(nb_classes, activation='softmax', use_bias=True, name='proba')(x)
         
-    x = layers.Dense(nb_classes, activation='softmax', use_bias=True, name='proba')(x)
-    
     inputs = img_input
     
     model = models.Model(inputs, x, name='mnasnet')

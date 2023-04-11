@@ -39,7 +39,7 @@ def shuffle_unit(x, groups, channels, strides):
 
     return x
 
-def ShuffleNet(classes, start_channels, input_shape=(224, 224, 3)):
+def ShuffleNet(start_channels, classes = 1000, input_shape=(224, 224, 3), include_top = True):
     groups = 2
     input = Input(input_shape)
 
@@ -59,9 +59,9 @@ def ShuffleNet(classes, start_channels, input_shape=(224, 224, 3)):
         for i in range(repetition):
             x = shuffle_unit(x, groups, channels, strides=(1, 1))
 
-    x = GlobalAveragePooling2D()(x)
+    if include_top:
+        x = GlobalAveragePooling2D()(x)
+        x = Dense(classes, activation='softmax')(x)
 
-    output = Dense(classes, activation='softmax')(x)
-
-    model = Model(input, output)
+    model = Model(input, x)
     return model

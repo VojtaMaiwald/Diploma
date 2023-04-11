@@ -5,63 +5,7 @@ import glob
 import re
 
 MODELS = [
-	#'EfficientNetB0_E25_B16_AUGFULL_SHUFFLE_float16.tflite',
-	#'EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite',
-	#'EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_lr_00001_float16.tflite',
-	#'EfficientNetB0_E25_B8_AUGFULL_SHUFFLE_float16.tflite',
-	#"EfficientNetB0_E25_B4_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite"
-#
-	#'MobileNetV2_E25_B16_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV2_E25_B32_D_0.2_AUGFULL_float16.tflite',
-	#'MobileNetV2_E25_B32_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV2_E25_B32_D_0.2_AUG_float16.tflite',
-	#'MobileNetV2_E25_B32_D_0.2_NOAUG_float16.tflite',
-	#'MobileNetV2_E25_B8_D_0.2_AUGFULL_float16.tflite',
-
-	#'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_0.5_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_0.5_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Large_E25_B16_A_1_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-
-	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Small_E25_B16_A_0.75_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Small_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Small_E25_B16_A_1.25_D_0.2_AUGFULL_SHUFFLE_MINI_float16.tflite',
-	#'MobileNetV3Small_E25_B32_A_1.5_D_0.2_AUGFULL_SHUFFLE_float16.tflite',
-	#'MobileNetV3Small_E30_B16_A_1.25_D_0.5_AUGFULL_SHUFFLE_float16.tflite',
-
-	#'MobileNetV2_AroVal_B16_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV2_AroVal_B32_E25_D0.2_Adam_0.0001_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV2_AroVal_B32_E25_D0.2_SGD_0.01_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV2_AroVal_B8_E25_D0.2_Adam_0.00003_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV2_AroVal_B8_E25_D0.2_SGD_lr_0.01_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV2_AroVal_B8_E25_D0.5_Adam_0.01_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV3Large_AroVal_E25_B16_D0.2_SDG0.01_AUGFULL_SHUFFLE_MINI_float16.tflite', 
-	#'MobileNetV3Large_AroVal_E25_B16_D0.5_SDG0.01_AUGFULL_SHUFFLE_float16.tflite', 
-	#'MobileNetV3Large_AroVal_E25_B32_D0.2_SDG0.01_AUGFULL_SHUFFLE_float16.tflite',
-	
-	#'NASNetMobile_E25_B16_AUGFULL_SHUFFLE_float16.tflite',
-	#'NASNetMobile_E25_B16_float16.tflite',
-	#'NASNetMobile_E25_B32_AUGFULL_SHUFFLE_float16.tflite',
-	#'NASNetMobile_E25_B32_float16.tflite',
-	#'NASNetMobile_E25_B8_AUGFULL_SHUFFLE_float16.tflite',
-	#'NASNetMobile_E25_B8_float16.tflite',
-
-	#'ShuffleNet_E25_B8_Channels200_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
-	#'ShuffleNet_E25_B8_Channels400_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
-	#'ShuffleNetV2_E25_B8_SC1.0_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
-	#'EfficientNetB0_E25_B8_SGD0.01_AUGFULL_SHUFFLE_float16.tflite',
-	#'GhostNet_E25_B16_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
-	#'MnasNet_E25_B8_A1.0_DEPTH1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
-	#'ShuffleNetV2_E25_B8_SC0.5_BOTTLENECK1_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite',
+	"MnasNet_E25_B8_A0.5_DEPTH5_Adam0.0001_AUGFULL_SHUFFLE_float16.tflite",
 ]
 
 MODEL_NAME = "EfficientNetB0_E25_B4_AUGFULL_SHUFFLE_float16.tflite"

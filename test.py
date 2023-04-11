@@ -5,8 +5,8 @@ import glob
 import os
 import re
 
-MODEL_NAME = "DenseNet121_E25_B8_Adam0.0001_AUGFULL_SHUFFLE_E_24_1.243_T.tf"
-MODEL_PATH = f".\\nets\\DenseNet\\{MODEL_NAME}"
+MODEL_NAME = "ShuffleNetV2_AroVal_E10_B8_SC1.5_BOTTLENECK1_SGD0.01_AUGFULL_SHUFFLE"
+MODEL_PATH = f".\\nets\\ShuffleNetV2\\{MODEL_NAME}"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
@@ -15,7 +15,7 @@ TEST_VAL_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\a
 
 WEBCAM = False
 ONE_IMG_TEST = False
-REGRESSION = False
+REGRESSION = True
 
 def webcam(model):
 	cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")

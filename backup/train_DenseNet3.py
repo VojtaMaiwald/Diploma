@@ -9,7 +9,7 @@ from keras.applications import DenseNet121
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import SGD
 from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
@@ -36,7 +36,7 @@ AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.01
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"DenseNet121_E{EPOCHS}_B{BATCH_SIZE // 3}_Adam{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"DenseNet121_E{EPOCHS}_B{BATCH_SIZE // 3}_SGD{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -64,7 +64,7 @@ def load_model(strategy, existingModelPath = None):
 	else:
 		with strategy.scope():
 			model = DenseNet121(input_shape = IMAGE_SHAPE, classes = 8, weights = None)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE, momentum = 0.9), metrics = ['accuracy'])
 
 	return model
 

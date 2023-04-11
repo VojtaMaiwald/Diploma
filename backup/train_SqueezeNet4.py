@@ -31,14 +31,14 @@ TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 
 BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
-DROPOUT = None
+DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
 LEARNING_RATE = 0.0001
-COMPRESSION = 1.0
+COMPRESSION = 4.0
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"SqueezeNet_E{EPOCHS}_B{BATCH_SIZE // 3}_COMPR{COMPRESSION}_DNone_Adam{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"SqueezeNet_E{EPOCHS}_B{BATCH_SIZE // 3}_COMPR{COMPRESSION}_D{DROPOUT}_Adam{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')

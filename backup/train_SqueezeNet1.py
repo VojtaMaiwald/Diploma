@@ -9,7 +9,7 @@ from architectures.SqueezeNet import SqueezeNet_11
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.utils.np_utils import to_categorical
 from keras.losses import CategoricalCrossentropy
 from sklearn.utils import class_weight
@@ -29,16 +29,16 @@ TRAIN_LABELS_PATH = "/sp1/train_set/all_labels_exp.npy"
 TEST_IMAGES_PATH = "/sp1/val_set/images/"
 TEST_LABELS_PATH = "/sp1/val_set/all_labels_exp.npy"
 
-BATCH_SIZE = 8 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
+BATCH_SIZE = 4 * 3 # BATCH_SIZE * strategy.num_replicas_in_sync
 EPOCHS = 25
 DROPOUT = 0.2
 IMAGE_SHAPE = (224, 224, 3)
 AUGMENT = True
 SHUFFLE = True
-LEARNING_RATE = 0.0001
-COMPRESSION = 1.25
+LEARNING_RATE = 0.01
+COMPRESSION = 1.0
 ENDING_STRING = ("AUGFULL" if AUGMENT else "") + ("_SHUFFLE" if SHUFFLE else "")
-MODEL_NAME = f"SqueezeNet_E{EPOCHS}_B{BATCH_SIZE // 3}_COMPR{COMPRESSION}_D{DROPOUT}_Adam{LEARNING_RATE}_{ENDING_STRING}"
+MODEL_NAME = f"SqueezeNet_E{EPOCHS}_B{BATCH_SIZE // 3}_COMPR{COMPRESSION}_D{DROPOUT}_SGD{LEARNING_RATE}_{ENDING_STRING}"
 
 def init():
 	gpus = tf.config.list_physical_devices('GPU')
@@ -66,7 +66,7 @@ def load_model(strategy, existingModelPath = None):
 	else:
 		with strategy.scope():
 			model = SqueezeNet_11(input_shape = IMAGE_SHAPE, nb_classes = 8, dropout_rate = DROPOUT, compression = COMPRESSION)
-			model.compile(loss = CategoricalCrossentropy(), optimizer = Adam(learning_rate = LEARNING_RATE), metrics = ['accuracy'])
+			model.compile(loss = CategoricalCrossentropy(), optimizer = SGD(learning_rate = LEARNING_RATE, momentum = 0.9), metrics = ['accuracy'])
 
 	return model
 

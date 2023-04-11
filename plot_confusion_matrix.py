@@ -11,6 +11,10 @@ cm = np.array([[226,  12,  54,  55,  20,  16,  29,  88],
                [ 79,   6,  44,  36,  51,  55, 202,  27],
                [ 73,  90,  19,  15,  10,  25,  24, 243]])
 
+
+classes = ["Neutral", "Happiness", "Sadness", "Surprise", "Fear", "Disgust", "Anger", "Contempt"]
+#classes = ["Neutrální", "Štěstí", "Smutek", "Překvapení", "Strach", "Znechucení", "Zlost", "Opovržení"]
+
 # Convert absolute numbers to percentages
 #cm = cm / np.sum(cm)
 cm = cm / 500
@@ -21,8 +25,8 @@ plt.imshow(cm, cmap=plt.cm.Blues)
 plt.title("Confusion matrix")
 plt.colorbar()
 tick_marks = np.arange(cm.shape[0])
-plt.xticks(tick_marks, tick_marks)
-plt.yticks(tick_marks, tick_marks)
+plt.xticks(tick_marks, classes, rotation = 45)
+plt.yticks(tick_marks, classes)
 plt.xlabel('Predicted')
 plt.ylabel('True')
 plt.grid(False)

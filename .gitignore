@@ -5,7 +5,7 @@ nets/*
 !nets/MobileNetV3Small/
 !nets/MobileNetV3Large/
 !nets/NASNetMobile/
-!nets/EfficientNetB0/
+!nets/EfficientNet/
 !nets/SqueezeNet/
 !nets/GhostNet/
 !nets/ShuffleNet/

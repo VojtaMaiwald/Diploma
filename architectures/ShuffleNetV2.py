@@ -55,7 +55,8 @@ def shuffle_unit(inputs, out_channels, bottleneck_ratio,strides=2,stage=1,block=
         s2 = Activation('relu', name='{}/relu_1x1conv_3'.format(prefix))(s2)
         ret = Concatenate(axis=bn_axis, name='{}/concat_2'.format(prefix))([x, s2])
 
-    ret = Lambda(channel_shuffle, name='{}/channel_shuffle'.format(prefix))(ret)
+    #ret = Lambda(channel_shuffle, name='{}/channel_shuffle'.format(prefix))(ret)
+    ret = channel_shuffle(ret)
 
     return ret
 
@@ -124,12 +125,11 @@ def ShuffleNetV2(include_top=True,
         k = 2048
     x = Conv2D(k, kernel_size=1, padding='same', strides=1, name='1x1conv5_out', activation='relu')(x)
 
-    if pooling == 'avg':
-        x = GlobalAveragePooling2D(name='global_avg_pool')(x)
-    elif pooling == 'max':
-        x = GlobalMaxPooling2D(name='global_max_pool')(x)
-
     if include_top:
+        if pooling == 'avg':
+            x = GlobalAveragePooling2D(name='global_avg_pool')(x)
+        elif pooling == 'max':
+            x = GlobalMaxPooling2D(name='global_max_pool')(x)
         x = Dense(classes, name='fc')(x)
         x = Activation('softmax', name='softmax')(x)
 

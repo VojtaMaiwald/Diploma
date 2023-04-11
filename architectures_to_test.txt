@@ -4,25 +4,17 @@ MobileNetV3Small				from keras.applications import MobileNetV3Small
 MobileNetV3Large				from keras.applications import MobileNetV3Large
 EfficientNetB0					from keras.applications import EfficientNetB0
 EfficientNetB1					from keras.applications import EfficientNetB1
-EfficientNetB2					from keras.applications import EfficientNetB2
 EfficientNetV2B0				from keras.applications import EfficientNetV2B0
 EfficientNetV2B1				from keras.applications import EfficientNetV2B1
-EfficientNetV2B2				from keras.applications import EfficientNetV2B2
 NASNetMobile					external file
 MNasNet					        external file
 DenseNet-121					from keras.applications import DenseNet121
 SqueezeNet						external file
-SpaghettiNet
 ShuffleNet						external file
 ShuffleNetV2					external file
-FBNet
+FBNet					        only Pytorch implementation
 GhostNet						external file
 CondenseNet					    only Pytorch implementation
-ESPNet
-ESPNetV2
-DiCENet
-ChamNet
-MixNet
 AmoebaNet                       only Pytorch implementation
 
 https://www.tensorflow.org/lite/api_docs/python/tflite_model_maker/image_classifier
