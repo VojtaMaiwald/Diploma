@@ -12,7 +12,8 @@ cm = np.array([[226,  12,  54,  55,  20,  16,  29,  88],
                [ 73,  90,  19,  15,  10,  25,  24, 243]])
 
 # Convert absolute numbers to percentages
-#cm = cm / np.sum(cm) * 100
+#cm = cm / np.sum(cm)
+cm = cm / 500
 
 # Plot confusion matrix
 #plt.imshow(cm, cmap=plt.cm.YlGnBu)
@@ -32,8 +33,8 @@ for i in range(cm.shape[0]):
     for j in range(cm.shape[1]):
         color = "white" if cm[i, j] > thresh else "black"
         #color = "white" if cm[i, j] < thresh else "black"
-        #plt.text(j, i, "{:.1f} %".format(cm[i, j]), ha='center', va='center', color=color)
-        plt.text(j, i, cm[i, j], ha='center', va='center', color=color)
+        plt.text(j, i, "{:.2f}".format(cm[i, j]), ha='center', va='center', color=color)
+        #plt.text(j, i, cm[i, j], ha='center', va='center', color=color)
 
 #plt.savefig("confusion_matrix.svg", format="svg")
 plt.show()
