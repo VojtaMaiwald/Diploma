@@ -5,8 +5,8 @@ import glob
 import os
 import re
 
-MODEL_NAME = "ShuffleNetV2_AroVal_E10_B8_SC1.5_BOTTLENECK1_SGD0.01_AUGFULL_SHUFFLE"
-MODEL_PATH = f".\\nets\\ShuffleNetV2\\{MODEL_NAME}"
+MODEL_NAME = "MobileNetV3Large_AroVal_E10_B16_D0.0_SDG0.01AUGFULL_SHUFFLE_MINI"
+MODEL_PATH = f".\\nets\\totest\\{MODEL_NAME}"
 TEST_IMAGES_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\images\\"
 TEST_LABELS_PATH = "C:\\Users\\Vojta\\DiplomaProjects\\AffectNet\\val_set\\all_labels_exp.npy"
 DICT = {0: "Neutral", 1: "Happiness", 2: "Sadness", 3: "Surprise", 4: "Fear", 5: "Disgust", 6: "Anger", 7: "Contempt", 8: "None", 9: "Uncertain", 10: "No-Face"}
@@ -71,6 +71,9 @@ def testValDataset(model):
 	print("\n")
 	evaluation = (1 - (errors / (len(images_paths_list)))) * 100
 	print(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f = open(MODEL_PATH + "\\stats2.txt", "w")
+	f.write(f"{MODEL_NAME}\nImages: {len(images_paths_list)}\nErrors: {errors}\nSuccess rate: {evaluation:.3f} %\nConfusion matrix:\n{tf.math.confusion_matrix(labels, predictions)}")
+	f.close()
 
 def testValDatasetRegression(model):
 	labels_aro = np.load(TEST_ARO_LABELS_PATH)
