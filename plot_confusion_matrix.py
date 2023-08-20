@@ -2,33 +2,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Example confusion matrix data
-cm = np.array([[226,  12,  54,  55,  20,  16,  29,  88],
-               [ 21, 370,   4,  25,   3,  11,   1,  65],
-               [ 73,  15, 257,  24,  58,  19,  32,  22],
-               [ 39,  33,  31, 232, 125,  13,   7,  20],
-               [ 20,   8,  27,  70, 350,  10,   7,   8],
-               [ 45,  28,  44,  26,  46, 239,  53,  19],
-               [ 79,   6,  44,  36,  51,  55, 202,  27],
-               [ 73,  90,  19,  15,  10,  25,  24, 243]])
+cm = np.array(
+    [[278,  16,  45,  59,   9,  16,  41,  36],
+     [ 29, 341,   8,  39,   1,  14,   4,  64],
+     [ 85,   6, 286,  25,  29,  22,  36,  11],
+     [ 59,  25,  23, 316,  55,  11,   6,   5],
+     [ 24,  11,  48, 111, 265,  21,  19,   1],
+     [ 51,  24,  45,  37,  21, 239,  70,  13],
+     [ 79,   5,  46,  32,  19,  49, 255,  15],
+     [120,  76,  13,  25,   2,  17,  33, 213],]
+ )
 
-
-classes = ["Neutral", "Happiness", "Sadness", "Surprise", "Fear", "Disgust", "Anger", "Contempt"]
-#classes = ["Neutrální", "Štěstí", "Smutek", "Překvapení", "Strach", "Znechucení", "Zlost", "Opovržení"]
+#classes = ["Neutral", "Happiness", "Sadness", "Surprise", "Fear", "Disgust", "Anger", "Contempt"]
+classes = ["Neutrální", "Šťastný", "Smutný", "Překvapený", "Vystrašený", "Znechucený", "Naštvaný", "Opovržlivý"]
 
 # Convert absolute numbers to percentages
 #cm = cm / np.sum(cm)
-cm = cm / 500
+#cm = cm / 500
+#cm = cm / np.sum(cm) * 100
+
+# Set the figure size
+fig, ax = plt.subplots(figsize=(10, 9))
 
 # Plot confusion matrix
 #plt.imshow(cm, cmap=plt.cm.YlGnBu)
 plt.imshow(cm, cmap=plt.cm.Blues)
-plt.title("Confusion matrix")
+#plt.title("Confusion matrix")
 plt.colorbar()
 tick_marks = np.arange(cm.shape[0])
 plt.xticks(tick_marks, classes, rotation = 45)
 plt.yticks(tick_marks, classes)
-plt.xlabel('Predicted')
-plt.ylabel('True')
+plt.xlabel('Predikce')
+plt.ylabel('Skutečnost')
 plt.grid(False)
 
 # Add text labels to the plot, with white color for the highest numbers
@@ -37,8 +42,8 @@ for i in range(cm.shape[0]):
     for j in range(cm.shape[1]):
         color = "white" if cm[i, j] > thresh else "black"
         #color = "white" if cm[i, j] < thresh else "black"
-        plt.text(j, i, "{:.2f}".format(cm[i, j]), ha='center', va='center', color=color)
-        #plt.text(j, i, cm[i, j], ha='center', va='center', color=color)
+        #plt.text(j, i, "{:.2f}".format(cm[i, j]), ha='center', va='center', color=color)
+        plt.text(j, i, cm[i, j], ha='center', va='center', color=color)
 
 #plt.savefig("confusion_matrix.svg", format="svg")
 plt.show()
