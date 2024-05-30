@@ -43,4 +43,4 @@ https://play.google.com/store/apps/details?id=cz.vsb.faceemotionrecognition
 https://dspace.vsb.cz/handle/10084/151688
 
 <a id="12">[12]</a>
-Publication was not published yet
+https://ieeexplore.ieee.org/document/10414102
